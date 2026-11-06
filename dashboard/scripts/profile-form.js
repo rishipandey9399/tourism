@@ -4,7 +4,7 @@
    (Theme switch and sidebar come from scripts/dashboard.js.)
      1. Data: investor types, states, Madhya Pradesh districts
      2. Helpers: field errors
-     3. Selected track banner (from profile.html's choice)
+     3. Chosen track (from profile.html; saved with the profile)
      4. Investor type: note, labels, organisation fields
      5. PAN: format check + "Verify PAN" (demo)
      6. Address: state → district
@@ -84,7 +84,7 @@
     "Shivpuri", "Sidhi", "Singrauli", "Tikamgarh", "Ujjain", "Umaria", "Vidisha",
   ];
 
-  // Shown in the "Selected Application Track" banner
+  // Valid tracks (chosen on profile.html)
   const TRACKS = {
     tender: { name: "Tender Based Application", amount: "Investment below ₹100 Cr", icon: "#icon-tender" },
     direct: { name: "Direct Investment Application", amount: "Investment above ₹100 Cr", icon: "#icon-invest" },
@@ -117,7 +117,7 @@
 
 
   /* ---------------------------------------------------------------------------
-     3. SELECTED TRACK BANNER
+     3. CHOSEN TRACK
      "?track=" from profile.html, else the choice saved there.
      --------------------------------------------------------------------------- */
   let track = new URLSearchParams(location.search).get("track");
@@ -129,9 +129,6 @@
     }
   }
   if (!TRACKS[track]) track = "tender";
-  $("#track-name").textContent = TRACKS[track].name;
-  $("#track-amount").textContent = TRACKS[track].amount;
-  $("#track-icon").setAttribute("href", TRACKS[track].icon);
 
 
   /* ---------------------------------------------------------------------------
