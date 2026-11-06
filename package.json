@@ -1,0 +1,19 @@
+{
+  "name": "mp-tourism-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MP Tourism investor portal – home, login, create account, investor dashboard",
+  "scripts": {
+    "build:home": "tailwindcss -i home/styles/input.css -o home/styles/home.css --minify",
+    "build:login": "tailwindcss -i login/styles/input.css -o login/styles/login.css --minify",
+    "build:dashboard": "tailwindcss -i dashboard/styles/input.css -o dashboard/styles/dashboard.css --minify",
+    "build": "npm run build:home && npm run build:login && npm run build:dashboard",
+    "watch:home": "tailwindcss -i home/styles/input.css -o home/styles/home.css --watch",
+    "watch:login": "tailwindcss -i login/styles/input.css -o login/styles/login.css --watch",
+    "watch:dashboard": "tailwindcss -i dashboard/styles/input.css -o dashboard/styles/dashboard.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.4",
+    "tailwindcss": "4.3.4"
+  }
+}

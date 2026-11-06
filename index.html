@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invest in MP Tourism | Heritage Capital</title>
+  <meta name="description" content="Lease tourism land and heritage property directly from the Government of Madhya Pradesh, and track every step to allotment online.">
+
+  <!--
+    THEME (runs before anything is drawn, so the page never flashes the wrong theme)
+    Picks "dark" (ivory / black / gold, the default) or "light" (saffron / maroon):
+      1. a ?theme= value in the address (the login page passes it along), else
+      2. the visitor's last choice, saved in this browser.
+  -->
+  <script>
+    (function () {
+      var theme = new URLSearchParams(location.search).get("theme");
+      try {
+        if (theme) {
+          localStorage.setItem("mpTheme", theme);
+        } else {
+          theme = localStorage.getItem("mpTheme");
+        }
+      } catch (error) {
+        /* storage blocked (private mode): just use the default */
+      }
+      document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
+    })();
+  </script>
+
+  <!-- Fonts: Cormorant Garamond (headings), Jost (text), Yatra One (Hindi) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&family=Yatra+One&display=swap">
+
+  <!-- Compiled Tailwind styles (source: home/styles/input.css – run "npm run build:home") -->
+  <link rel="stylesheet" href="home/styles/home.css">
+</head>
+
+<body class="group/page" data-locked>
+
+  <!-- =====================================================================
+       SVG SPRITE
+       Icons and gradients reused across the page via <use href="#id">.
+       ===================================================================== -->
+  <svg class="absolute size-0" aria-hidden="true">
+    <defs>
+      <!-- Progress-ring colours (figures band): gold in dark theme, saffron in light theme -->
+      <linearGradient id="ring-gold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#F3DDA6"/>
+        <stop offset=".55" stop-color="#C9A25E"/>
+        <stop offset="1" stop-color="#8E5A2E"/>
+      </linearGradient>
+      <linearGradient id="ring-saffron" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#F5A43A"/>
+        <stop offset=".55" stop-color="#E88900"/>
+        <stop offset="1" stop-color="#A93612"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Figures band icons -->
+    <symbol id="icon-growth" viewBox="0 0 48 48"><path d="M4 36l12-12 8 8 18-18"/><path d="M30 14h12v12"/></symbol>
+    <symbol id="icon-temple" viewBox="0 0 40 40"><path d="M4 34h32M7 34V20h26v14M12 20c0-8 4-12 8-14 4 2 8 6 8 14"/><path d="M12 26h4M24 26h4M18 34v-6h4v6"/></symbol>
+    <symbol id="icon-visitor" viewBox="0 0 48 48"><circle cx="24" cy="15" r="8"/><path d="M8 44c2-10 8-15 16-15s14 5 16 15"/></symbol>
+    <symbol id="icon-map" viewBox="0 0 48 48"><path d="m17 9-11 4v27l11-4 14 4 11-4V9l-11 4zM17 9v27M31 13v27"/><circle cx="24" cy="22" r="3"/></symbol>
+
+    <!-- General icons -->
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  </svg>
+
+
+  <!-- =====================================================================
+       PRELOADER
+       Counts to 100 while the page loads, then splits open (scripts/main.js).
+       ===================================================================== -->
+  <div class="preloader on-dark fixed inset-0 z-[200] grid place-items-center pointer-events-none" id="preloader" aria-hidden="true">
+    <div class="preloader-half preloader-half--top top-0"></div>
+    <div class="preloader-half preloader-half--bottom bottom-0"></div>
+
+    <div class="preloader-content relative text-center transition-opacity duration-600">
+      <img class="w-[120px] mx-auto mb-[26px] opacity-95" src="assets/img/brand/logo-white.png" alt="">
+      <div class="font-serif text-[84px] font-light leading-none text-accent-soft tabular-nums" id="preloader-count">0</div>
+      <div class="relative w-[180px] h-px mx-auto mt-[22px] overflow-hidden bg-white/20">
+        <i class="absolute inset-0 bg-accent origin-left scale-x-0" id="preloader-bar"></i>
+      </div>
+      <div class="mt-[18px] font-hindi text-[17px] text-muted">हृदय प्रदेश में निवेश का स्वागत है</div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       CUSTOM CURSOR (mouse only)
+       ===================================================================== -->
+  <div class="cursor" id="cursor"><span id="cursor-label">View</span></div>
+
+
+  <!-- =====================================================================
+       HEADER
+       Transparent over the hero; turns into a floating rounded bar after
+       scrolling, and hides while scrolling down (scripts/main.js).
+       ===================================================================== -->
+  <header class="site-header group/header on-dark on-chrome fixed inset-x-0 top-0 z-90" id="site-header">
+    <div class="container-page flex items-center justify-between h-[92px] transition-[height] duration-500 ease-smooth group-data-solid/header:h-[74px]">
+
+      <!-- Logo -->
+      <a href="#top" class="flex items-center gap-3.5" aria-label="MP Tourism Investor Portal home">
+        <img class="w-auto h-[54px] md:h-16 transition-[height] duration-500 ease-smooth group-data-solid/header:h-[52px]" src="assets/img/brand/logo-white.png" alt="MP Tourism">
+        <span class="hidden md:inline-block pl-3.5 border-l border-line text-[11px] leading-[1.4] tracking-[.28em] uppercase text-white">Investor<br>Portal</span>
+      </a>
+
+      <!-- Main navigation (wide screens) -->
+      <nav class="hidden xl:flex gap-[34px] text-[13px] tracking-[.2em] uppercase" aria-label="Main">
+        <a class="nav-link relative py-1.5 text-white" href="#landbank">Land bank</a>
+        <a class="nav-link relative py-1.5 text-white" href="#sectors">Sectors</a>
+        <a class="nav-link relative py-1.5 text-white" href="#process">How it works</a>
+        <a class="nav-link relative py-1.5 text-white" href="#why">Why invest</a>
+        <a class="nav-link relative py-1.5 text-white" href="#help">Help</a>
+      </nav>
+
+      <!-- Right side: theme switch, login, register, menu button -->
+      <div class="flex items-center gap-3.5">
+        <button type="button" class="grid place-items-center size-10 md:size-11 rounded-full border border-white/30 text-white transition-colors hover:border-[#E9CC8E] hover:bg-white/8" id="theme-toggle" title="Switch theme" aria-label="Switch theme">
+          <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+          <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+        </button>
+
+        <a class="btn btn-outline btn-sm gap-2.5 max-md:px-3.5 max-md:py-2.5 text-white hover:text-white" href="login/index.html" id="login-link">
+          <svg class="icon hidden md:block" viewBox="0 0 24 24"><path d="M10 4h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-8M3 12h11m-4-4 4 4-4 4"/></svg>
+          Login
+        </a>
+
+        <a class="btn btn-primary btn-sm hidden md:inline-flex" href="#help" data-magnetic>Register</a>
+
+        <button type="button" class="relative size-[50px] rounded-full border border-white/30 text-white" id="menu-button" aria-label="Open menu" aria-expanded="false">
+          <i class="burger-line"></i>
+          <i class="burger-line"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- =====================================================================
+       FULL-SCREEN MENU
+       Opened by the menu button. Hovering a link swaps the photo on the right.
+       ===================================================================== -->
+  <div class="menu on-dark fixed inset-0 z-80 grid bg-night-2 light:bg-[#422416] lg:grid-cols-[1.2fr_1fr]" id="menu">
+    <nav class="flex flex-col justify-center pt-[120px] pb-[90px] px-[clamp(16px,5vw,72px)]" aria-label="Menu">
+      <a class="menu-link flex items-baseline gap-[22px] font-serif text-[clamp(36px,5.6vw,80px)] font-light leading-[1.08] text-muted transition-all duration-500 ease-soft" href="#landbank" style="--i:0" data-image="assets/img/banner-3.jpg">
+        <small class="font-sans text-xs not-italic tracking-[.2em] text-accent">01</small>
+        <span class="line-mask"><span>The land bank</span></span>
+      </a>
+      <a class="menu-link flex items-baseline gap-[22px] font-serif text-[clamp(36px,5.6vw,80px)] font-light leading-[1.08] text-muted transition-all duration-500 ease-soft" href="#sectors" style="--i:1" data-image="assets/img/opportunities/TourismSector1.jpg">
+        <small class="font-sans text-xs not-italic tracking-[.2em] text-accent">02</small>
+        <span class="line-mask"><span>Investment sectors</span></span>
+      </a>
+      <a class="menu-link flex items-baseline gap-[22px] font-serif text-[clamp(36px,5.6vw,80px)] font-light leading-[1.08] text-muted transition-all duration-500 ease-soft" href="#help" style="--i:2" data-image="assets/img/brand/hero-banner.jpg">
+        <small class="font-sans text-xs not-italic tracking-[.2em] text-accent">03</small>
+        <span class="line-mask"><span>Help &amp; FAQs</span></span>
+      </a>
+      <a class="menu-link flex items-baseline gap-[22px] font-serif text-[clamp(36px,5.6vw,80px)] font-light leading-[1.08] text-muted transition-all duration-500 ease-soft" href="#process" style="--i:3" data-image="assets/img/projects/featured-1.jpg">
+        <small class="font-sans text-xs not-italic tracking-[.2em] text-accent">04</small>
+        <span class="line-mask"><span>Five steps to allotment</span></span>
+      </a>
+      <a class="menu-link flex items-baseline gap-[22px] font-serif text-[clamp(36px,5.6vw,80px)] font-light leading-[1.08] text-muted transition-all duration-500 ease-soft" href="#why" style="--i:4" data-image="assets/img/banner-4.jpg">
+        <small class="font-sans text-xs not-italic tracking-[.2em] text-accent">05</small>
+        <span class="line-mask"><span>Why Madhya Pradesh</span></span>
+      </a>
+      <a class="menu-link flex items-baseline gap-[22px] font-serif text-[clamp(36px,5.6vw,80px)] font-light leading-[1.08] text-muted transition-all duration-500 ease-soft" href="#help" style="--i:5" data-image="assets/img/heritage/gate-welcome.jpg">
+        <small class="font-sans text-xs not-italic tracking-[.2em] text-accent">06</small>
+        <span class="line-mask"><span>Register as an investor</span></span>
+      </a>
+    </nav>
+
+    <!-- Photo that follows the hovered link -->
+    <div class="relative hidden lg:block m-4 overflow-hidden rounded-3xl" id="menu-photo">
+      <img class="crossfade-img is-active" src="assets/img/banner-3.jpg" alt="">
+    </div>
+
+    <div class="absolute left-[clamp(16px,5vw,72px)] bottom-9 flex flex-wrap gap-[30px] text-[13px] text-muted">
+      <span>Madhya Pradesh Tourism Board · Government of Madhya Pradesh</span>
+      <span>English / हिंदी</span>
+      <span>Helpline 1800-000-0000</span>
+    </div>
+  </div>
+
+
+  <main id="top">
+
+    <!-- ===================================================================
+         HERO
+         Full-screen video with the headline. The heading lines slide up once
+         the preloader finishes; the video shrinks into a card on scroll.
+         =================================================================== -->
+    <section class="on-dark relative h-svh min-h-[640px]" id="hero">
+
+      <!-- Video frame (scripts/main.js scales and rounds it while scrolling) -->
+      <div class="absolute inset-0 overflow-hidden rounded-3xl will-change-transform" id="hero-frame">
+        <video class="hero-video absolute inset-0 size-full object-cover" muted playsinline autoplay loop preload="auto" poster="assets/video/hero-wide-poster.jpg">
+          <source src="assets/video/hero-wide.mp4" type="video/mp4">
+        </video>
+        <div class="hero-shade absolute inset-0"></div>
+      </div>
+
+      <!-- Headline and calls to action -->
+      <div class="absolute inset-0 z-2 flex flex-col justify-end pb-[clamp(40px,7vh,80px)]">
+        <div class="container-page w-full">
+          <h1 class="font-serif text-display font-light" id="hero-heading">
+            <span class="line-mask" style="--i:0"><span>Invest in Madhya Pradesh,</span></span>
+            <span class="line-mask" style="--i:1"><span><em class="heading-highlight">the heart of India.</em></span></span>
+          </h1>
+
+          <div class="flex flex-wrap items-end justify-between gap-[30px] mt-9">
+            <div class="hero-intro max-w-[460px]">
+              <p class="mb-[26px] text-muted">Lease tourism land and heritage property directly from the state, and track every step to allotment online.</p>
+              <div class="flex flex-wrap gap-3">
+                <a class="btn btn-primary" href="#help" data-magnetic>
+                  Register as an investor
+                  <svg class="icon"><use href="#icon-arrow"/></svg>
+                </a>
+                <a class="btn btn-outline" href="#landbank" data-magnetic>Explore the land bank</a>
+              </div>
+            </div>
+
+            <!-- Live status line with a pulsing dot -->
+            <div class="hero-intro flex items-center gap-3.5 text-xs tracking-[.2em] uppercase text-muted">
+              <i class="pulse-dot size-2 rounded-full bg-accent"></i>
+              Land bank open · 4 parcels accepting intentions
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- "Scroll to explore" with a dripping line (hidden on phones) -->
+      <div class="scroll-hint absolute right-[clamp(16px,5vw,72px)] top-1/2 z-2 hidden md:flex items-center gap-4 [writing-mode:vertical-rl] text-[11px] tracking-[.35em] uppercase text-muted">Scroll to explore</div>
+    </section>
+
+
+    <!-- ===================================================================
+         FIGURES BAND
+         Four key numbers. Each ring fills and the number counts up when the
+         band scrolls into view. Light theme shows them as cards.
+         --fill on .ring-progress = how much of the ring stays empty.
+         =================================================================== -->
+    <section class="border-b border-line light:border-b-0" aria-label="Madhya Pradesh tourism in figures">
+      <div class="container-page grid gap-5 md:gap-x-6 md:gap-y-7 2xl:gap-6 grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 py-[clamp(40px,5vw,64px)]">
+
+        <!-- Figure: investment potential -->
+        <div class="reveal flex items-center gap-4 min-w-0 light:rounded-[21px] light:border light:border-line light:bg-[#FFFAF2D9] light:px-5 light:py-[18px] light:shadow-[0_10px_24px_rgb(232_137_0/.10)] light:transition-transform light:hover:-translate-y-1">
+          <div class="relative flex-none size-[72px] md:size-[84px]">
+            <svg class="ring-svg size-full" viewBox="0 0 100 100">
+              <circle class="ring-track" cx="50" cy="50" r="44" fill="none" stroke-width="6"/>
+              <circle class="ring-progress" style="--fill:.12" pathLength="1" cx="50" cy="50" r="44" fill="none" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon absolute inset-5 md:inset-6 size-8 md:size-9 text-accent-soft light:text-accent" viewBox="0 0 48 48"><use href="#icon-growth"/></svg>
+          </div>
+          <div>
+            <b class="block font-serif font-normal text-[clamp(34px,3.2vw,48px)] leading-none whitespace-nowrap tabular-nums light:text-[#A93612]">₹<span data-count="28500">0</span><small class="ml-1 font-sans text-[.36em] font-medium tracking-[.06em] text-accent">Cr+</small></b>
+            <span class="block mt-2 text-[11.5px] tracking-[.2em] uppercase text-muted">Investment potential</span>
+          </div>
+        </div>
+
+        <!-- Figure: tourism projects -->
+        <div class="reveal flex items-center gap-4 min-w-0 light:rounded-[21px] light:border light:border-line light:bg-[#FFFAF2D9] light:px-5 light:py-[18px] light:shadow-[0_10px_24px_rgb(232_137_0/.10)] light:transition-transform light:hover:-translate-y-1">
+          <div class="relative flex-none size-[72px] md:size-[84px]">
+            <svg class="ring-svg size-full" viewBox="0 0 100 100">
+              <circle class="ring-track" cx="50" cy="50" r="44" fill="none" stroke-width="6"/>
+              <circle class="ring-progress" style="--fill:.3" pathLength="1" cx="50" cy="50" r="44" fill="none" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon absolute inset-5 md:inset-6 size-8 md:size-9 text-accent-soft light:text-accent" viewBox="0 0 40 40"><use href="#icon-temple"/></svg>
+          </div>
+          <div>
+            <b class="block font-serif font-normal text-[clamp(34px,3.2vw,48px)] leading-none whitespace-nowrap tabular-nums light:text-[#A93612]"><span data-count="350">0</span><small class="ml-1 font-sans text-[.36em] font-medium tracking-[.06em] text-accent">+</small></b>
+            <span class="block mt-2 text-[11.5px] tracking-[.2em] uppercase text-muted">Tourism projects</span>
+          </div>
+        </div>
+
+        <!-- Figure: annual tourists -->
+        <div class="reveal flex items-center gap-4 min-w-0 light:rounded-[21px] light:border light:border-line light:bg-[#FFFAF2D9] light:px-5 light:py-[18px] light:shadow-[0_10px_24px_rgb(232_137_0/.10)] light:transition-transform light:hover:-translate-y-1">
+          <div class="relative flex-none size-[72px] md:size-[84px]">
+            <svg class="ring-svg size-full" viewBox="0 0 100 100">
+              <circle class="ring-track" cx="50" cy="50" r="44" fill="none" stroke-width="6"/>
+              <circle class="ring-progress" style="--fill:.2" pathLength="1" cx="50" cy="50" r="44" fill="none" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon absolute inset-5 md:inset-6 size-8 md:size-9 text-accent-soft light:text-accent" viewBox="0 0 48 48"><use href="#icon-visitor"/></svg>
+          </div>
+          <div>
+            <b class="block font-serif font-normal text-[clamp(34px,3.2vw,48px)] leading-none whitespace-nowrap tabular-nums light:text-[#A93612]"><span data-count="9.8" data-decimals="1">0</span><small class="ml-1 font-sans text-[.36em] font-medium tracking-[.06em] text-accent">Cr+</small></b>
+            <span class="block mt-2 text-[11.5px] tracking-[.2em] uppercase text-muted">Annual tourists</span>
+          </div>
+        </div>
+
+        <!-- Figure: districts -->
+        <div class="reveal flex items-center gap-4 min-w-0 light:rounded-[21px] light:border light:border-line light:bg-[#FFFAF2D9] light:px-5 light:py-[18px] light:shadow-[0_10px_24px_rgb(232_137_0/.10)] light:transition-transform light:hover:-translate-y-1">
+          <div class="relative flex-none size-[72px] md:size-[84px]">
+            <svg class="ring-svg size-full" viewBox="0 0 100 100">
+              <circle class="ring-track" cx="50" cy="50" r="44" fill="none" stroke-width="6"/>
+              <circle class="ring-progress" style="--fill:.4" pathLength="1" cx="50" cy="50" r="44" fill="none" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon absolute inset-5 md:inset-6 size-8 md:size-9 text-accent-soft light:text-accent" viewBox="0 0 48 48"><use href="#icon-map"/></svg>
+          </div>
+          <div>
+            <b class="block font-serif font-normal text-[clamp(34px,3.2vw,48px)] leading-none whitespace-nowrap tabular-nums light:text-[#A93612]"><span data-count="55">0</span></b>
+            <span class="block mt-2 text-[11.5px] tracking-[.2em] uppercase text-muted">Districts</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         LAND BANK – 3D MAP
+         Drag to rotate the state, tap a pin (or a list row) to fly in and see
+         the parcel. Chips, list, pins and panel are built by scripts/land-map.js.
+         =================================================================== -->
+    <section class="pt-[clamp(80px,11vw,160px)] pb-[clamp(28px,3vw,40px)]" id="landbank">
+      <div class="container-page">
+
+        <!-- Heading + status filter chips -->
+        <div class="reveal flex flex-wrap items-end justify-between gap-[30px] mb-11">
+          <div>
+            <span class="eyebrow">Tourism land bank</span>
+            <h2 class="font-serif text-h2 font-light">Parcels open for investment <em class="heading-highlight">now</em></h2>
+            <p class="max-w-[520px] mt-[22px] text-lead text-muted">Drag to turn the state, then tap a pin to fly in and see the khasra, area, reserve price and lease term.</p>
+          </div>
+          <div class="flex flex-wrap gap-2" id="map-filters" role="group" aria-label="Filter parcels by status"></div>
+        </div>
+
+        <div class="grid gap-[22px] lg:grid-cols-[330px_1fr]">
+
+          <!-- Side panel: search + parcel list -->
+          <aside class="order-2 lg:order-none flex flex-col max-h-[420px] lg:max-h-[660px] overflow-hidden rounded-[20px] border border-line bg-surface">
+            <label class="flex items-center gap-2.5 m-3.5 px-3.5 py-3 rounded-xl border border-line bg-page text-muted focus-within:border-brand">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input class="flex-1 min-w-0 bg-transparent text-sm text-ink outline-none" type="search" id="map-search" placeholder="Search parcels or places" aria-label="Search parcels or places">
+            </label>
+            <div class="px-2 pb-2.5 overflow-auto [scrollbar-width:thin]" id="map-list"></div>
+          </aside>
+
+          <!-- The 3D map -->
+          <div class="map-viewport relative min-h-[500px] sm:min-h-[660px] overflow-hidden rounded-[20px] border border-line" id="map-viewport" aria-label="3D map of Madhya Pradesh with tourism land parcels">
+
+            <!-- Compass (turns with the map) -->
+            <div class="absolute left-4 top-4 z-5 grid place-items-center size-10 rounded-full border border-line bg-surface text-[11px] font-semibold text-brand shadow-[0_4px_12px_rgb(30_20_22/.06)]" title="North">
+              <b class="block" id="map-compass">N</b>
+            </div>
+
+            <!-- Zoom and reset buttons -->
+            <div class="absolute right-4 top-4 z-5 flex flex-col gap-2" id="map-controls">
+              <button type="button" class="grid place-items-center size-10 rounded-xl border border-line bg-surface text-lg transition-colors hover:border-brand hover:text-brand" data-zoom="in" aria-label="Zoom in">+</button>
+              <button type="button" class="grid place-items-center size-10 rounded-xl border border-line bg-surface text-lg transition-colors hover:border-brand hover:text-brand" data-zoom="out" aria-label="Zoom out">−</button>
+              <button type="button" class="grid place-items-center size-10 rounded-xl border border-line bg-surface text-lg transition-colors hover:border-brand hover:text-brand" data-zoom="reset" aria-label="Reset view">⟲</button>
+            </div>
+
+            <!-- Rotating model: shadow + surface here, slabs and pins added by script -->
+            <div class="map-stage" id="map-stage">
+              <div class="map-shadow"></div>
+              <div class="map-surface" id="map-surface"></div>
+            </div>
+
+            <div class="absolute left-4 bottom-4 z-5 hidden sm:block text-[11px] tracking-[.18em] uppercase text-muted">Drag to rotate · tap a pin</div>
+
+            <!-- Parcel details (filled by script when a parcel is selected) -->
+            <div class="map-panel absolute z-6 right-4 bottom-4 w-[min(380px,calc(100%-32px))] max-h-[calc(100%-92px)] overflow-auto rounded-[18px] border border-line bg-surface shadow-[0_30px_60px_rgb(30_20_22/.2)] cursor-auto max-sm:left-2.5 max-sm:right-2.5 max-sm:bottom-2.5 max-sm:w-auto max-sm:max-h-[70%]" id="map-panel" role="dialog" aria-label="Parcel details" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-5 mt-[22px] text-xs text-muted">
+          <p>Map positions are approximate.</p>
+          <a class="btn btn-outline" href="#" data-magnetic>
+            Browse the full land bank
+            <svg class="icon"><use href="#icon-arrow"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         INVESTMENT SECTORS
+         Hovering or tapping a sector opens its description and swaps the photo.
+         =================================================================== -->
+    <section class="pt-[clamp(20px,2.5vw,32px)] pb-[clamp(80px,11vw,160px)]" id="sectors">
+      <div class="container-page grid items-center gap-[70px] lg:grid-cols-2">
+
+        <div>
+          <span class="eyebrow reveal">Investment sectors</span>
+          <h2 class="reveal mt-[18px] mb-[30px] font-serif text-[clamp(40px,4.4vw,68px)] font-light leading-[.98] tracking-[-.02em]">Built for every kind of stay <em class="heading-highlight">and experience</em></h2>
+          <p class="reveal max-w-[520px] -mt-3 mb-[30px] text-lead text-muted">Investment opportunities across hospitality, adventure, wellness, entertainment and experiential tourism.</p>
+
+          <!-- Sector list (aria-expanded marks the open one) -->
+          <div class="border-t border-line" id="sector-list">
+            <button type="button" class="sector block w-full py-[22px] border-b border-line text-left text-muted" aria-expanded="true" data-image="assets/img/opportunities/TourismSector1.jpg">
+              <span class="flex items-center justify-between gap-5 font-serif text-[clamp(22px,2vw,30px)]">Hospitality &amp; resorts <small class="font-sans text-xs tracking-[.2em] uppercase text-accent">Stay</small></span>
+              <span class="sector-text block text-sm text-muted">Hotels, luxury resorts, heritage hotels, wildlife resorts and homestays.</span>
+            </button>
+            <button type="button" class="sector block w-full py-[22px] border-b border-line text-left text-muted" aria-expanded="false" data-image="assets/img/opportunities/TourismSector4.jpg">
+              <span class="flex items-center justify-between gap-5 font-serif text-[clamp(22px,2vw,30px)]">Adventure tourism <small class="font-sans text-xs tracking-[.2em] uppercase text-accent">Thrill</small></span>
+              <span class="sector-text block text-sm text-muted">Ropeways, water sports, aero sports and camping.</span>
+            </button>
+            <button type="button" class="sector block w-full py-[22px] border-b border-line text-left text-muted" aria-expanded="false" data-image="assets/img/opportunities/TourismSector5.jpg">
+              <span class="flex items-center justify-between gap-5 font-serif text-[clamp(22px,2vw,30px)]">Wellness tourism <small class="font-sans text-xs tracking-[.2em] uppercase text-accent">Restore</small></span>
+              <span class="sector-text block text-sm text-muted">Health farms, wellness resorts and golf.</span>
+            </button>
+            <button type="button" class="sector block w-full py-[22px] border-b border-line text-left text-muted" aria-expanded="false" data-image="assets/img/opportunities/TourismSector3.jpg">
+              <span class="flex items-center justify-between gap-5 font-serif text-[clamp(22px,2vw,30px)]">Entertainment &amp; attractions <small class="font-sans text-xs tracking-[.2em] uppercase text-accent">Play</small></span>
+              <span class="sector-text block text-sm text-muted">Theme parks, museums, water parks and shows.</span>
+            </button>
+            <button type="button" class="sector block w-full py-[22px] border-b border-line text-left text-muted" aria-expanded="false" data-image="assets/img/heritage/ktcc-aerial-dusk.jpg">
+              <span class="flex items-center justify-between gap-5 font-serif text-[clamp(22px,2vw,30px)]">MICE &amp; film tourism <small class="font-sans text-xs tracking-[.2em] uppercase text-accent">Meet</small></span>
+              <span class="sector-text block text-sm text-muted">Convention centres, film studios and production infrastructure.</span>
+            </button>
+            <button type="button" class="sector block w-full py-[22px] border-b border-line text-left text-muted" aria-expanded="false" data-image="assets/img/projects/featured-4.jpg">
+              <span class="flex items-center justify-between gap-5 font-serif text-[clamp(22px,2vw,30px)]">Future tourism <small class="font-sans text-xs tracking-[.2em] uppercase text-accent">Next</small></span>
+              <span class="sector-text block text-sm text-muted">Cruise tourism, house boats and sea planes.</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sector photo (cross-fades when the sector changes) -->
+        <div class="relative aspect-[16/10] lg:aspect-[4/5] overflow-hidden rounded-3xl" id="sector-photo">
+          <img class="crossfade-img is-active" src="assets/img/opportunities/TourismSector1.jpg" alt="">
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         HOW IT WORKS
+         Black section with the five-step journey (scripts/journey.js builds
+         the steps and draws the path while scrolling).
+         =================================================================== -->
+    <section class="on-dark relative bg-black" id="process">
+      <div class="container-page">
+        <div class="flex flex-col gap-[22px] max-w-[760px] pt-[clamp(80px,11vw,160px)] pb-[70px]">
+          <span class="eyebrow text-accent-soft light:text-accent">How it works</span>
+          <h2 class="font-serif text-h2 font-light">From first look to allotment,<br><em class="heading-highlight">in five clear steps</em></h2>
+          <p class="max-w-[520px] text-lead text-muted">Every step happens on this portal, and you can always see where your application stands, what happens next and the deadline for it.</p>
+        </div>
+
+        <div class="journey pb-[clamp(80px,11vw,160px)]" id="journey" aria-label="Five steps from registration to allotment"></div>
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         WHY INVEST – photo mosaic
+         Tiles wipe in one after another; clicking one opens the lightbox.
+         =================================================================== -->
+    <section class="py-section" id="why">
+      <div class="container-page">
+        <span class="eyebrow reveal">Why invest</span>
+        <h2 class="reveal mt-5 font-serif text-h2 font-light">A state built for <em class="heading-highlight">tourism investment</em></h2>
+        <p class="reveal max-w-[520px] mt-5 text-lead text-muted">Tourism potential, investor-friendly policy, ready infrastructure and a department that works with you from planning to execution.</p>
+
+        <div class="grid gap-2.5 md:gap-4 mt-[60px] grid-cols-1 auto-rows-[220px] md:grid-cols-2 md:auto-rows-[240px] lg:grid-cols-12 lg:auto-rows-[clamp(90px,9vw,140px)]" id="mosaic">
+
+          <figure class="tile tile-reveal on-dark relative overflow-hidden rounded-3xl cursor-zoom-in md:col-span-2 lg:col-[1/6] lg:row-[1/5]" data-cursor="View" tabindex="0">
+            <img class="size-full object-cover" src="assets/img/brand/hero-banner-3.jpg" alt="Rafting on the Betwa at Orchha" loading="lazy">
+            <div class="absolute inset-0 bg-linear-to-b from-transparent from-30% to-night/90"></div>
+            <figcaption class="absolute left-5 right-5 bottom-[18px] z-1">
+              <b class="block font-serif font-normal text-[clamp(22px,2vw,30px)] leading-[1.05]">Single window</b>
+              <span class="tile-detail block mt-1.5 text-[13.5px] text-muted">Profile, land, tender, payment and documents in one place, with every step visible.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="tile tile-reveal on-dark relative overflow-hidden rounded-3xl cursor-zoom-in lg:col-[6/10] lg:row-[1/4]" data-cursor="View" tabindex="0">
+            <img class="size-full object-cover" src="assets/img/opportunities/TourismSector1.jpg" alt="Lakeside palace resort" loading="lazy">
+            <div class="absolute inset-0 bg-linear-to-b from-transparent from-30% to-night/90"></div>
+            <figcaption class="absolute left-5 right-5 bottom-[18px] z-1">
+              <b class="block font-serif font-normal text-[clamp(22px,2vw,30px)] leading-[1.05]">MP Tourism Policy 2025</b>
+              <span class="tile-detail block mt-1.5 text-[13.5px] text-muted">Incentives and capital subsidy for eligible tourism projects, claimed through the portal.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="tile tile-reveal on-dark relative overflow-hidden rounded-3xl cursor-zoom-in lg:col-[10/13] lg:row-[1/4]" data-cursor="View" tabindex="0">
+            <img class="size-full object-cover" src="assets/img/projects/featured-2.jpg" alt="Resort pool deck among trees" loading="lazy">
+            <div class="absolute inset-0 bg-linear-to-b from-transparent from-30% to-night/90"></div>
+            <figcaption class="absolute left-5 right-5 bottom-[18px] z-1">
+              <b class="block font-serif font-normal text-[clamp(22px,2vw,30px)] leading-[1.05]">Tourism land bank</b>
+              <span class="tile-detail block mt-1.5 text-[13.5px] text-muted">Investment-ready parcels across the state, with khasra, area and connectivity on record.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="tile tile-reveal on-dark relative overflow-hidden rounded-3xl cursor-zoom-in lg:col-[6/9] lg:row-[4/7]" data-cursor="View" tabindex="0">
+            <img class="size-full object-cover" src="assets/img/opportunities/TourismSector8.jpg" alt="Hill-view terrace pool" loading="lazy">
+            <div class="absolute inset-0 bg-linear-to-b from-transparent from-30% to-night/90"></div>
+            <figcaption class="absolute left-5 right-5 bottom-[18px] z-1">
+              <b class="block font-serif font-normal text-[clamp(22px,2vw,30px)] leading-[1.05]">Connectivity</b>
+              <span class="tile-detail block mt-1.5 text-[13.5px] text-muted">Road, rail and air links to major cities, listed for each parcel.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="tile tile-reveal on-dark relative overflow-hidden rounded-3xl cursor-zoom-in lg:col-[9/13] lg:row-[4/7]" data-cursor="View" tabindex="0">
+            <img class="size-full object-cover" src="assets/img/banner.jpg" alt="Khajuraho temple at sunset" loading="lazy">
+            <div class="absolute inset-0 bg-linear-to-b from-transparent from-30% to-night/90"></div>
+            <figcaption class="absolute left-5 right-5 bottom-[18px] z-1">
+              <b class="block font-serif font-normal text-[clamp(22px,2vw,30px)] leading-[1.05]">Growing footfall</b>
+              <span class="tile-detail block mt-1.5 text-[13.5px] text-muted">Over 9.8 crore visitors a year across heritage, wildlife, spiritual and leisure circuits.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="tile tile-reveal on-dark relative overflow-hidden rounded-3xl cursor-zoom-in lg:col-[1/6] lg:row-[5/8]" data-cursor="View" tabindex="0">
+            <img class="size-full object-cover" src="assets/img/heritage/dome-sunset.jpg" alt="Domed heritage building at sunset" loading="lazy">
+            <div class="absolute inset-0 bg-linear-to-b from-transparent from-30% to-night/90"></div>
+            <figcaption class="absolute left-5 right-5 bottom-[18px] z-1">
+              <b class="block font-serif font-normal text-[clamp(22px,2vw,30px)] leading-[1.05]">Government support</b>
+              <span class="tile-detail block mt-1.5 text-[13.5px] text-muted">A dedicated helpdesk and officers who handle your application from enquiry to allotment.</span>
+            </figcaption>
+          </figure>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         HELP & CONTACT
+         Contact pills on the left, guide links on the right.
+         =================================================================== -->
+    <section class="container-page py-section grid gap-[6vw] lg:grid-cols-[.8fr_1.2fr]" id="help">
+
+      <div>
+        <span class="eyebrow reveal">Help &amp; contact</span>
+        <h2 class="reveal mt-5 font-serif text-[clamp(42px,5vw,80px)] font-light leading-[.98] tracking-[-.02em]">Questions before <em class="heading-highlight">you apply?</em></h2>
+        <p class="reveal max-w-[520px] mt-[22px] text-lead text-muted">Read the investor guide, check the questions below, or raise a request with the MP Tourism helpdesk. Every request gets a reference number you can track.</p>
+
+        <div class="reveal grid gap-3.5 mt-9">
+          <a class="help-link flex items-center justify-between px-6 py-4 rounded-full border border-line" href="tel:18000000000">
+            <span>1800-000-0000</span>
+            <small class="text-[11px] tracking-[.24em] uppercase text-accent">Helpline</small>
+          </a>
+          <a class="help-link flex items-center justify-between px-6 py-4 rounded-full border border-line" href="mailto:tourism@mp.gov.in">
+            <span>tourism@mp.gov.in</span>
+            <small class="text-[11px] tracking-[.24em] uppercase text-accent">Email</small>
+          </a>
+          <a class="help-link flex items-center justify-between px-6 py-4 rounded-full border border-line" href="#">
+            <span>MP Tourism Board, Bhopal</span>
+            <small class="text-[11px] tracking-[.24em] uppercase text-accent">Office</small>
+          </a>
+        </div>
+      </div>
+
+      <div class="reveal grid content-center gap-4">
+        <a class="guide-row grid grid-cols-[60px_1fr] gap-x-[18px] gap-y-1 py-7 border-b border-line first:border-t" href="#">
+          <small class="row-span-2 pt-2.5 text-xs tracking-[.2em] text-accent">01</small>
+          <b class="guide-title font-serif font-normal text-[clamp(26px,2.4vw,38px)] leading-[1.1] transition-colors">Read the investor guide</b>
+          <span class="text-[15px] text-muted">From registration to an allotted, paid-up project, step by step.</span>
+        </a>
+        <a class="guide-row grid grid-cols-[60px_1fr] gap-x-[18px] gap-y-1 py-7 border-b border-line" href="#">
+          <small class="row-span-2 pt-2.5 text-xs tracking-[.2em] text-accent">02</small>
+          <b class="guide-title font-serif font-normal text-[clamp(26px,2.4vw,38px)] leading-[1.1] transition-colors">Read the FAQs</b>
+          <span class="text-[15px] text-muted">Tracks, documents, tenders, premium payments and capital subsidy.</span>
+        </a>
+        <a class="guide-row grid grid-cols-[60px_1fr] gap-x-[18px] gap-y-1 py-7 border-b border-line" href="#">
+          <small class="row-span-2 pt-2.5 text-xs tracking-[.2em] text-accent">03</small>
+          <b class="guide-title font-serif font-normal text-[clamp(26px,2.4vw,38px)] leading-[1.1] transition-colors">Contact the helpdesk</b>
+          <span class="text-[15px] text-muted">Raise a request and get a reference number you can track.</span>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================================
+       FOOTER
+       Black (dark theme) / deep brown (light theme), rounded top corners,
+       with a faint lattice (jali) pattern in the top-right corner.
+       ===================================================================== -->
+  <footer class="on-dark on-chrome relative isolate overflow-hidden rounded-t-[36px] pt-[70px] pb-10 bg-linear-160 from-chrome-from to-chrome-to">
+
+    <!-- Jali texture: overlapping circles with a small diamond in each -->
+    <svg class="footer-jali absolute inset-0 -z-1 size-full pointer-events-none" aria-hidden="true">
+      <defs>
+        <pattern id="jali" width="56" height="56" patternUnits="userSpaceOnUse">
+          <g fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="0" cy="0" r="28"/>
+            <circle cx="56" cy="0" r="28"/>
+            <circle cx="0" cy="56" r="28"/>
+            <circle cx="56" cy="56" r="28"/>
+            <circle cx="28" cy="28" r="28"/>
+            <path d="M28 18l4 10-4 10-4-10z"/>
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#jali)"/>
+    </svg>
+
+    <div class="container-page">
+
+      <!-- Link columns -->
+      <div class="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
+
+        <div>
+          <a href="#top" class="block"><img class="h-[66px] mb-[22px]" src="assets/img/brand/logo-white.png" alt="MP Tourism"></a>
+          <p class="text-[14.5px] text-muted">A single digital platform for tourism investment: land allocation, approvals, project monitoring and subsidy management.</p>
+        </div>
+
+        <div>
+          <h5 class="mb-[18px] text-xs font-medium tracking-[.25em] uppercase text-accent">Quick links</h5>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#why">Why invest</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#landbank">Land bank</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#process">How it works</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#help">Investor guide &amp; policies</a>
+        </div>
+
+        <div>
+          <h5 class="mb-[18px] text-xs font-medium tracking-[.25em] uppercase text-accent">Investor services</h5>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#help">Register as investor</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#">Track my application</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#">Capital subsidy claims</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#help">Helpdesk &amp; FAQs</a>
+        </div>
+
+        <div>
+          <h5 class="mb-[18px] text-xs font-medium tracking-[.25em] uppercase text-accent">Tourism sectors</h5>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#sectors">Eco tourism</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#sectors">Heritage tourism</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#sectors">Adventure tourism</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#sectors">Hotels &amp; resorts</a>
+          <a class="block mb-2.5 text-[14.5px] text-muted hover:text-ink" href="#sectors">Spiritual tourism</a>
+        </div>
+
+        <div>
+          <h5 class="mb-[18px] text-xs font-medium tracking-[.25em] uppercase text-accent">Contact</h5>
+          <a class="flex items-center gap-2.5 mb-2.5 text-[14.5px] text-muted hover:text-ink" href="tel:18000000000">
+            <svg class="icon size-4 flex-none text-accent" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+            1800-000-0000
+          </a>
+          <a class="flex items-center gap-2.5 mb-2.5 text-[14.5px] text-muted hover:text-ink" href="mailto:tourism@mp.gov.in">
+            <svg class="icon size-4 flex-none text-accent" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            tourism@mp.gov.in
+          </a>
+          <p class="flex items-center gap-2.5 mb-2.5 text-[14.5px] text-muted">
+            <svg class="icon size-4 flex-none text-accent" viewBox="0 0 24 24"><use href="#icon-pin"/></svg>
+            Bhopal, Madhya Pradesh
+          </p>
+        </div>
+      </div>
+
+      <!-- Lotus divider -->
+      <svg class="footer-divider block w-full h-6 mt-[18px]" viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 12H168M232 12H400"/>
+        <path class="footer-lotus" d="M200 4c-5 4-6 10 0 16 6-6 5-12 0-16zM200 20c-8-1-14-5-16-11 6 0 12 3 16 11zM200 20c8-1 14-5 16-11-6 0-12 3-16 11zM176 12h6M218 12h6"/>
+      </svg>
+
+      <!-- Copyright + legal links -->
+      <div class="flex flex-wrap justify-between gap-4 mt-[18px] text-[13px] text-ink/50">
+        <span>© 2026 Madhya Pradesh Tourism Board. Government of Madhya Pradesh.</span>
+        <nav class="flex flex-wrap gap-5" aria-label="Legal">
+          <a href="#">Privacy</a>
+          <a href="#">Accessibility</a>
+          <a href="#">Disclaimer</a>
+          <a href="#">Terms of use</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- =====================================================================
+       LIGHTBOX
+       Full-screen photo viewer for the "Why invest" mosaic.
+       ===================================================================== -->
+  <div class="lightbox on-dark fixed inset-0 z-[120] grid place-items-center bg-night/94" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <img class="max-w-[90vw] max-h-[80vh] rounded-3xl" id="lightbox-image" alt="">
+    <p class="absolute left-4 right-4 bottom-7 text-center text-xs tracking-[.25em] uppercase text-muted" id="lightbox-caption"></p>
+    <button type="button" class="absolute top-6 right-6 size-[52px] rounded-full border border-line text-[22px]" id="lightbox-close" aria-label="Close">×</button>
+    <button type="button" class="absolute top-1/2 left-6 -mt-[26px] size-[52px] rounded-full border border-line text-[22px]" id="lightbox-prev" aria-label="Previous photo">‹</button>
+    <button type="button" class="absolute top-1/2 right-6 -mt-[26px] size-[52px] rounded-full border border-line text-[22px]" id="lightbox-next" aria-label="Next photo">›</button>
+  </div>
+
+
+  <!-- Scripts: page behaviour, five-step journey, 3D land map -->
+  <script src="home/scripts/main.js"></script>
+  <script src="home/scripts/journey.js"></script>
+  <script src="home/scripts/land-map.js"></script>
+</body>
+</html>

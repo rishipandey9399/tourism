@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create Account · MP Tourism Investment Portal</title>
+
+  <!--
+    THEME (runs before anything is drawn, so the page never flashes the wrong theme)
+    "light" (peach / saffron, the default here) or "dark" (ivory / black / gold):
+      1. a ?theme= value in the address (the portal's Login button passes it), else
+      2. the visitor's last choice, saved in this browser.
+  -->
+  <script>
+    (function () {
+      var theme = new URLSearchParams(location.search).get("theme");
+      try {
+        if (theme) {
+          localStorage.setItem("mpTheme", theme);
+        } else {
+          theme = localStorage.getItem("mpTheme");
+        }
+      } catch (error) {
+        /* storage blocked (private mode): just use the default */
+      }
+      document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light";
+    })();
+  </script>
+
+  <!-- Compiled Tailwind styles (source: styles/input.css – run "npm run build:login") -->
+  <link rel="stylesheet" href="styles/login.css">
+</head>
+
+<body>
+
+  <!-- =====================================================================
+       TOP BAR: back to the portal + theme switch (fixed, top right)
+       ===================================================================== -->
+  <nav class="fixed top-2.5 right-2.5 min-[701px]:top-4 min-[701px]:right-4 z-50 flex items-center gap-2.5" aria-label="Page options">
+
+    <a class="inline-flex items-center justify-center gap-2 size-[42px] min-[701px]:w-auto min-[701px]:px-4 rounded-full border border-line bg-surface/85 backdrop-blur-sm text-[14px] font-semibold text-ink shadow-[0_6px_18px_#0000001a] hover:border-accent hover:text-primary dark:border-black dark:bg-black dark:text-white dark:hover:border-[#C9A25E] dark:hover:text-[#E9CC8E]" href="../index.html" id="back-to-portal">
+      <svg class="icon size-[18px] [stroke-width:1.7]" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+      <span class="hidden min-[701px]:inline">Back to portal</span>
+    </a>
+
+    <button type="button" class="grid place-items-center size-[42px] rounded-full border border-line bg-surface/85 backdrop-blur-sm text-ink shadow-[0_6px_18px_#0000001a] hover:border-accent hover:text-primary dark:border-black dark:bg-black dark:text-white dark:hover:border-[#C9A25E] dark:hover:text-[#E9CC8E]" id="theme-toggle" title="Switch theme" aria-label="Switch theme">
+      <!-- Sun shows in the light theme, moon in the dark theme -->
+      <svg class="icon size-[18px] [stroke-width:1.7] dark:hidden" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+      <svg class="icon size-[18px] [stroke-width:1.7] hidden dark:block" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </nav>
+
+
+  <!-- =====================================================================
+       SVG SPRITE
+       • #artwork – the page's single picture (fort photo, emblem, temple,
+         corner pattern and bottom border are all cut out of it).
+       • Clip paths / masks that cut those pieces out.
+       • Icons reused via <use href="#id">.
+       ===================================================================== -->
+  <svg class="absolute size-0" aria-hidden="true">
+    <defs>
+      <image id="artwork" href="images/login-artwork.png" width="1697" height="927"/>
+
+      <!-- Decorative border (bottom) -->
+      <clipPath id="bottom-border">
+        <path d="M0 852C85 876 140 800 231 803S394 880 479 867 558 831 634 849 715 868 784 852 887 882 965 850L1697 867V927H0Z"/>
+      </clipPath>
+
+      <!-- Form icons -->
+      <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M3 22v-3a6 6 0 016-6h6a6 6 0 016 6v3Z"/></symbol>
+      <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="13" rx="1"/><path d="M8 10V6a4 4 0 018 0v4M12 15v3"/></symbol>
+      <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/><ellipse cx="12" cy="12" rx="4" ry="6"/><path d="M12 9v3"/></symbol>
+      <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 2l9 4v7c0 5-5 8-9 10-4-2-9-5-9-10V6Z M8 12l3 3 5-6"/></symbol>
+      <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M21 3v6h-6M3 21v-6h6M20 9A8 8 0 006 4L3 7M4 15a8 8 0 0014 5l3-3"/></symbol>
+      <symbol id="icon-login" viewBox="0 0 24 24"><path d="M10 4h9a2 2 0 012 2v14a2 2 0 01-2 2h-9v-5M10 8V4M1 13h14m-4-4 4 4-4 4"/></symbol>
+      <symbol id="icon-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+      <symbol id="icon-shield-plain" viewBox="0 0 24 24"><path d="M12 2l8 3.5v6.5c0 5-3.6 8.4-8 10-4.4-1.6-8-5-8-10V5.5z"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+      <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M2 12h19m-7-7 7 7-7 7"/></symbol>
+
+      <!-- Stat icons (filled) -->
+      <symbol id="icon-landmark" viewBox="0 0 40 40"><path fill="currentColor" d="M20 1 1 10v3h38v-3ZM7 15h5v17H7Zm11 0h5v17h-5Zm11 0h5v17h-5ZM4 33h32v3H4ZM0 37h40v3H0Z"/><path fill="#fff3df" d="m20 5-10 5h20Z"/></symbol>
+      <symbol id="icon-coins" viewBox="0 0 40 40"><g fill="currentColor" stroke="#fff0d9" stroke-width="1.2"><ellipse cx="26" cy="7" rx="12" ry="5"/><path d="M14 8v6c0 7 24 7 24 0V8c-4 6-20 6-24 0ZM14 15v6c0 7 24 7 24 0v-6c-4 6-20 6-24 0ZM14 22v6c0 7 24 7 24 0v-6c-4 6-20 6-24 0Z"/><ellipse cx="14" cy="19" rx="12" ry="5"/><path d="M2 20v6c0 7 24 7 24 0v-6c-4 6-20 6-24 0ZM2 27v6c0 7 24 7 24 0v-6c-4 6-20 6-24 0Z"/></g></symbol>
+      <symbol id="icon-people" viewBox="0 0 40 40"><g fill="currentColor"><ellipse cx="20" cy="10" rx="7" ry="9"/><ellipse cx="8" cy="13" rx="5" ry="7"/><ellipse cx="32" cy="13" rx="5" ry="7"/><path d="M10 36V29a10 10 0 0120 0v7ZM1 33v-7a8 8 0 019-7l3 2c-5 3-6 6-6 12Zm38 0h-6c0-6-1-9-6-12l3-2a8 8 0 019 7Z"/></g></symbol>
+    </defs>
+  </svg>
+
+
+  <!-- =====================================================================
+       PAGE
+       .scene is the design canvas on wide windows (scaled by scripts/login.js)
+       and a simple stacked column on phones / upright screens.
+       ===================================================================== -->
+  <main class="page-glow relative w-full min-h-svh overflow-hidden canvas:h-screen canvas:min-h-0" id="viewport">
+    <div class="scene relative min-h-svh px-4 pt-3.5 pb-4 tablet:max-w-[760px] tablet:mx-auto canvas:w-(--canvas-width,1697px) canvas:h-(--canvas-height,927px) canvas:min-h-0 canvas:p-0 canvas:origin-top-left" id="scene">
+
+
+      <!-- ---------------------------------------------------------------
+           FORT PHOTO (Gwalior Fort at sunset)
+           Pinned to the bottom-left. Its top and right edges fade out
+           (.photo-fade) so the sky melts into the page background.
+           Phones: a faint full-width strip along the bottom.
+           --------------------------------------------------------------- -->
+      <img class="photo-fade artwork-photo absolute inset-x-0 bottom-0 w-full h-[42%] object-cover object-left-bottom opacity-30 pointer-events-none canvas:right-auto canvas:w-[1100px] canvas:h-[550px] canvas:opacity-100" src="images/gwalior-fort.webp" alt="" aria-hidden="true">
+
+
+      <!-- ---------------------------------------------------------------
+           DECORATIVE ARTWORK (cut out of images/login-artwork.png)
+           Phones: the bottom border, faded, behind everything.
+           Canvas: its own layer stretched along the window's bottom edge.
+           --------------------------------------------------------------- -->
+      <svg class="artwork absolute inset-0 size-full opacity-22 pointer-events-none canvas:hidden" viewBox="0 0 1697 927" aria-hidden="true">
+        <use href="#artwork" clip-path="url(#bottom-border)"/>
+      </svg>
+
+      <!-- Decorative border, stretched along the bottom (canvas only) -->
+      <svg class="artwork hidden canvas:block absolute left-0 bottom-0 w-full h-[127px] pointer-events-none" viewBox="0 800 1697 127" preserveAspectRatio="none" aria-hidden="true">
+        <use href="#artwork" clip-path="url(#bottom-border)"/>
+      </svg>
+
+      <!-- Mandala, pinned to the top-right corner (images/corner-mandala.webp,
+           transparent background). The flower sits in the image's top-right,
+           so the image is anchored there; in the dark theme it gets the same
+           warm sepia tint as the other artwork. -->
+      <img class="corner-mandala artwork-photo absolute right-0 top-0 w-[360px] opacity-45 pointer-events-none select-none canvas:w-[760px] canvas:opacity-85" src="images/corner-mandala.webp" alt="" aria-hidden="true">
+
+
+      <!-- ---------------------------------------------------------------
+           BRAND: MP Tourism logo (same as the portal's) | portal name
+           Maroon logo on the light theme, black on the ivory dark theme.
+           --------------------------------------------------------------- -->
+      <header class="relative flex flex-nowrap items-center gap-3 pr-[100px] tablet:justify-center canvas:absolute canvas:left-[66px] canvas:top-[30px] canvas:h-[104px] canvas:gap-4 canvas:pr-0 canvas:translate-x-(--canvas-shift-left) canvas:translate-y-(--canvas-offset-y)">
+        <a class="flex-none" href="../index.html" aria-label="MP Tourism – back to the investor portal">
+          <img class="w-auto h-[52px] dark:brightness-0 canvas:h-[104px]" src="../assets/img/brand/logo-maroon.png" alt="Madhya Pradesh – The heart of Incredible India">
+        </a>
+
+        <div class="h-10 border-l-2 border-line canvas:h-[59px] canvas:mx-[6px]"></div>
+
+        <div class="text-[15px] font-bold leading-[1.25] canvas:text-[32px] canvas:leading-[1.08]">MP Tourism<br>Investment Portal</div>
+      </header>
+
+
+      <!-- ---------------------------------------------------------------
+           HERO: eyebrow, heading, swoosh, tagline, three stats
+           --------------------------------------------------------------- -->
+      <section class="relative my-3.5 short:my-2.5 text-center canvas:absolute canvas:left-[143px] canvas:top-[153px] canvas:w-[680px] canvas:m-0 canvas:text-left canvas:translate-x-(--canvas-shift-left) canvas:translate-y-(--canvas-offset-y)" aria-label="Invest in Madhya Pradesh">
+
+        <div class="eyebrow hidden canvas:flex items-center gap-3 h-[38px] text-[14px] font-bold tracking-[1.6px] whitespace-nowrap text-muted">
+          INVEST IN
+          <svg class="flex-none w-11 h-[38px] text-primary dark:text-accent" viewBox="0 0 48 40" aria-hidden="true">
+            <path fill="currentColor" d="M24 1C11 14 17 26 24 30 31 25 37 14 24 1ZM5 7c0 16 5 22 17 24C12 23 16 14 5 7Zm38 0C32 14 36 23 26 31 38 29 43 23 43 7ZM1 23c5 11 15 15 23 11C13 33 7 29 1 23Zm46 0c-6 6-12 10-23 11 8 4 18 0 23-11Z"/>
+          </svg>
+          <span class="text-[12px] tracking-[2px]">MADHYA PRADESH</span>
+        </div>
+
+        <h1 class="m-0 font-serif text-[26px] leading-[1.02] tracking-[-1px] canvas:mt-[23px] canvas:text-[66px] canvas:tracking-[-1.8px]">
+          Invest in
+          <span class="block text-[31px] text-primary dark:text-[#9A6F2C] canvas:text-[76px] canvas:whitespace-nowrap">Madhya Pradesh</span>
+        </h1>
+
+        <!-- Brush stroke under the heading -->
+        <svg class="hidden canvas:block w-[162px] h-[27px] -mt-px ml-[467px]" viewBox="0 0 164 27" aria-hidden="true">
+          <path class="fill-[#e97308] dark:fill-[#C9A25E]" d="M1 23Q110-7 163 24Q93 9 1 23"/>
+        </svg>
+
+        <p class="hidden canvas:block mt-3 mb-[21px] text-[25px] whitespace-nowrap">Your Gateway to Tourism Investment Opportunities</p>
+
+        <!-- Stats -->
+        <div class="flex gap-2 mt-3 short:hidden canvas:gap-[21px] canvas:mt-0 canvas:ml-14">
+          <div class="w-1/3 px-1 py-2 rounded-xl text-center bg-surface/80 dark:bg-black dark:text-[#F4ECDD] canvas:w-[188px] canvas:h-[138px] canvas:px-2.5 canvas:py-4 canvas:rounded-[21px]">
+            <svg class="hidden canvas:block w-10 h-9 mx-auto mb-3 text-accent dark:text-[#C9A25E]" aria-hidden="true"><use href="#icon-landmark"/></svg>
+            <strong class="block text-[16px] tracking-[-.7px] text-primary dark:text-[#E9CC8E] canvas:text-[29px]">350+</strong>
+            <span class="block mt-1 text-[10px] canvas:text-[18px] canvas:whitespace-nowrap">Tourism Projects</span>
+          </div>
+          <div class="w-1/3 px-1 py-2 rounded-xl text-center bg-surface/80 dark:bg-black dark:text-[#F4ECDD] canvas:w-[208px] canvas:h-[138px] canvas:px-2.5 canvas:py-4 canvas:rounded-[21px]">
+            <svg class="hidden canvas:block w-10 h-9 mx-auto mb-3 text-accent dark:text-[#C9A25E]" aria-hidden="true"><use href="#icon-coins"/></svg>
+            <strong class="block text-[16px] tracking-[-.7px] text-primary dark:text-[#E9CC8E] canvas:text-[29px]">₹28,500 Cr+</strong>
+            <span class="block mt-1 text-[10px] canvas:text-[18px] canvas:whitespace-nowrap">Investment Potential</span>
+          </div>
+          <div class="w-1/3 px-1 py-2 rounded-xl text-center bg-surface/80 dark:bg-black dark:text-[#F4ECDD] canvas:w-[188px] canvas:h-[138px] canvas:px-2.5 canvas:py-4 canvas:rounded-[21px]">
+            <svg class="hidden canvas:block w-10 h-9 mx-auto mb-3 text-accent dark:text-[#C9A25E]" aria-hidden="true"><use href="#icon-people"/></svg>
+            <strong class="block text-[16px] tracking-[-.7px] text-primary dark:text-[#E9CC8E] canvas:text-[29px]">9.8 Cr+</strong>
+            <span class="block mt-1 text-[10px] canvas:text-[18px] canvas:whitespace-nowrap">Annual Tourists</span>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ---------------------------------------------------------------
+           REGISTRATION CARD (same card as the login page, different form)
+           Phones: a rounded card. Canvas: an arched SVG frame with the
+           form placed on top of it.
+           --------------------------------------------------------------- -->
+      <section class="relative w-full px-[18px] py-5 rounded-[64px_64px_24px_24px] border border-line bg-[#fff9ef] dark:bg-surface tablet:max-w-[600px] tablet:mx-auto canvas:absolute canvas:left-[895px] canvas:top-[29px] canvas:w-[709px] canvas:h-[837px] canvas:p-0 canvas:rounded-none canvas:border-0 canvas:bg-transparent canvas:drop-shadow-[0_13px_12px_#E8890042] dark:canvas:drop-shadow-[0_18px_24px_rgb(30_20_22/.18)] canvas:translate-x-(--canvas-shift-right) canvas:translate-y-(--canvas-offset-y)" aria-labelledby="welcome">
+
+        <!-- Arched card frame (canvas only) -->
+        <svg class="hidden canvas:block absolute inset-0 size-full" viewBox="0 0 709 837" aria-hidden="true">
+          <defs>
+            <linearGradient id="card-fill" x2="0" y2="1">
+              <stop class="card-gradient-top"/>
+              <stop class="card-gradient-mid" offset=".4"/>
+              <stop class="card-gradient-bottom" offset="1"/>
+            </linearGradient>
+          </defs>
+          <path class="card-outline" d="M355 2C320 45 233 16 167 82 68 77 3 124 3 207V752C3 802 37 835 80 835H628C674 835 707 803 707 752V207C707 124 642 77 541 82 477 16 391 45 355 2Z" fill="url(#card-fill)" stroke-width="1.7"/>
+          <path class="card-inner-outline" d="M355 14C316 51 229 29 173 92 76 85 15 130 15 208V751C15 794 43 824 82 824H627C667 824 695 794 695 751V208C695 130 634 85 536 92 480 29 393 51 355 14Z" fill="none" stroke-width="1.1"/>
+        </svg>
+
+        <h2 class="relative m-0 text-center font-serif text-[30px] leading-[1.2] tracking-[-1px] text-primary dark:text-ink canvas:absolute canvas:inset-x-0 canvas:top-[172px] canvas:text-[57px] canvas:tracking-[-1.8px]" id="welcome">Create Account</h2>
+
+        <div class="rule-both-sides [--rule-colour:var(--color-accent)] dark:[--rule-colour:#C9A25E] relative flex items-center justify-center gap-2.5 mt-1.5 mb-3.5 text-[14px] font-semibold before:min-w-5 before:max-w-[40px] after:min-w-5 after:max-w-[40px] canvas:absolute canvas:left-[75px] canvas:right-[61px] canvas:top-[253px] canvas:gap-[15px] canvas:m-0 canvas:text-[21px] canvas:whitespace-nowrap canvas:before:min-w-[30px] canvas:before:max-w-none canvas:after:min-w-[30px] canvas:after:max-w-none">Create your Investor Account in 4 quick steps</div>
+
+
+        <!-- -------------------------------------------------------------
+             REGISTRATION (demo only – see scripts/register.js)
+             A stepper on top, then one panel per step; only the current
+             panel is shown.
+             ------------------------------------------------------------- -->
+        <div class="relative canvas:absolute canvas:left-[75px] canvas:right-[61px] canvas:top-[303px]" id="register">
+
+          <!-- Stepper: data-state is "done", "current" or "todo" -->
+          <ol class="stepper mb-4 grid grid-cols-4 canvas:mb-7" aria-label="Registration steps">
+            <li class="step" data-state="current">
+              <span class="step-dot"><svg class="icon" aria-hidden="true"><use href="#icon-phone"/></svg></span>
+              <span class="step-label">Mobile</span>
+            </li>
+            <li class="step" data-state="todo">
+              <span class="step-dot"><svg class="icon" aria-hidden="true"><use href="#icon-shield-plain"/></svg></span>
+              <span class="step-label">OTP</span>
+            </li>
+            <li class="step" data-state="todo">
+              <span class="step-dot"><svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg></span>
+              <span class="step-label">Password</span>
+            </li>
+            <li class="step" data-state="todo">
+              <span class="step-dot"><svg class="icon" aria-hidden="true"><use href="#icon-check"/></svg></span>
+              <span class="step-label">Complete</span>
+            </li>
+          </ol>
+
+
+          <!-- STEP 1 – MOBILE NUMBER -->
+          <form class="step-panel" data-step="1" id="mobile-form" novalidate>
+            <label class="mb-[5px] block text-[14px] font-semibold text-muted canvas:mb-[7px] canvas:text-[20px]" for="mobile">Mobile Number</label>
+            <div class="input-box flex h-11 items-center overflow-hidden rounded-xl border-[1.5px] border-line bg-surface/50 dark:bg-white/70 canvas:h-[58px] canvas:rounded-[17px]">
+              <svg class="icon mx-3 h-[25px] w-5 text-muted canvas:ml-[18px] canvas:mr-3 canvas:w-[25px]" aria-hidden="true"><use href="#icon-phone"/></svg>
+              <span class="border-r border-line pr-3 text-[16px] font-semibold canvas:text-[20px]">+91</span>
+              <input class="h-full w-full min-w-0 bg-transparent px-3 text-[16px] tracking-wide text-ink outline-none canvas:text-[20px]" id="mobile" name="mobile" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="Enter 10-digit mobile number" required>
+            </div>
+            <p class="mt-2 text-[13px] text-muted canvas:mt-3 canvas:text-[17px]">We'll send a 6-digit OTP to verify this number.</p>
+
+            <button type="submit" class="primary-button mt-4 canvas:mt-6">
+              Send OTP
+              <svg class="icon size-[26px]" aria-hidden="true"><use href="#icon-arrow"/></svg>
+            </button>
+          </form>
+
+
+          <!-- STEP 2 – OTP -->
+          <form class="step-panel" data-step="2" id="otp-form" novalidate hidden>
+            <p class="text-[14px] canvas:text-[19px]">
+              Enter the 6-digit code sent to <b id="otp-number">+91</b>
+              <button type="button" class="ml-1 font-bold text-primary underline underline-offset-2 dark:text-[#9A6F2C]" data-go-to="1">Change</button>
+            </p>
+
+            <!-- OTP: ONE real input for all 6 digits (typing, Backspace and
+                 pasting always work), drawn as six boxes underneath it.
+                 scripts/register.js copies each digit into its box. -->
+            <div class="relative mt-3 canvas:mt-4">
+              <div class="grid grid-cols-6 gap-2 canvas:gap-3" id="otp-boxes" aria-hidden="true">
+                <span class="otp-box"></span>
+                <span class="otp-box"></span>
+                <span class="otp-box"></span>
+                <span class="otp-box"></span>
+                <span class="otp-box"></span>
+                <span class="otp-box"></span>
+              </div>
+              <input class="otp-input" id="otp" name="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="6-digit one-time password" required>
+            </div>
+
+            <p class="mt-3 text-[13px] text-muted canvas:mt-4 canvas:text-[17px]">
+              Didn't get it?
+              <button type="button" class="font-bold text-primary disabled:font-normal disabled:text-muted dark:text-[#9A6F2C]" id="resend-otp" disabled>Resend OTP in 0:30</button>
+            </p>
+
+            <button type="submit" class="primary-button mt-4 canvas:mt-6">
+              Verify OTP
+              <svg class="icon size-[26px]" aria-hidden="true"><use href="#icon-arrow"/></svg>
+            </button>
+          </form>
+
+
+          <!-- STEP 3 – PASSWORD -->
+          <form class="step-panel" data-step="3" id="password-form" novalidate hidden>
+            <label class="mb-[5px] block text-[14px] font-semibold text-muted canvas:mb-[7px] canvas:text-[20px]" for="new-password">Create Password</label>
+            <div class="input-box flex h-11 items-center overflow-hidden rounded-xl border-[1.5px] border-line bg-surface/50 dark:bg-white/70 canvas:h-[55px] canvas:rounded-[17px]">
+              <svg class="icon mx-3 h-[25px] w-5 text-muted canvas:ml-[18px] canvas:mr-[21px] canvas:w-[25px]" aria-hidden="true"><use href="#icon-lock"/></svg>
+              <input class="h-full w-full min-w-0 bg-transparent pr-2 text-[16px] text-ink outline-none canvas:text-[20px]" id="new-password" type="password" autocomplete="new-password" placeholder="Create a password" required>
+              <button type="button" class="grid h-full w-[43px] flex-none place-items-center bg-soft/50 text-muted dark:bg-[#EFE5D2] canvas:w-[60px]" data-toggle-password="new-password" aria-label="Show password" aria-pressed="false">
+                <svg class="icon size-[25px]" aria-hidden="true"><use href="#icon-eye"/></svg>
+              </button>
+            </div>
+
+            <!-- Strength meter: 4 bars, filled by scripts/register.js -->
+            <div class="mt-2 flex items-center gap-3 canvas:mt-2.5">
+              <div class="grid flex-1 grid-cols-4 gap-1.5" id="strength-bars" aria-hidden="true">
+                <span class="strength-bar"></span><span class="strength-bar"></span><span class="strength-bar"></span><span class="strength-bar"></span>
+              </div>
+              <span class="min-w-[64px] text-right text-[13px] font-semibold text-muted canvas:text-[16px]" id="strength-label">Too short</span>
+            </div>
+
+            <label class="mb-[5px] mt-3 block text-[14px] font-semibold text-muted canvas:mb-[7px] canvas:mt-4 canvas:text-[20px]" for="confirm-password">Confirm Password</label>
+            <div class="input-box flex h-11 items-center overflow-hidden rounded-xl border-[1.5px] border-line bg-surface/50 dark:bg-white/70 canvas:h-[55px] canvas:rounded-[17px]">
+              <svg class="icon mx-3 h-[25px] w-5 text-muted canvas:ml-[18px] canvas:mr-[21px] canvas:w-[25px]" aria-hidden="true"><use href="#icon-lock"/></svg>
+              <input class="h-full w-full min-w-0 bg-transparent pr-2 text-[16px] text-ink outline-none canvas:text-[20px]" id="confirm-password" type="password" autocomplete="new-password" placeholder="Re-enter the password" required>
+            </div>
+            <p class="mt-2 text-[13px] text-muted canvas:text-[16px]">Use at least 8 characters with letters and numbers.</p>
+
+            <button type="submit" class="primary-button mt-3 canvas:mt-4">
+              Create Account
+              <svg class="icon size-[26px]" aria-hidden="true"><use href="#icon-arrow"/></svg>
+            </button>
+          </form>
+
+
+          <!-- STEP 4 – COMPLETE -->
+          <div class="step-panel text-center" data-step="4" hidden>
+            <span class="mx-auto grid size-16 place-items-center rounded-full bg-[#E5F4E3] text-[#2E8B3A] canvas:size-[92px]">
+              <svg class="icon size-9 [stroke-width:2.4] canvas:size-[52px]" aria-hidden="true"><use href="#icon-check"/></svg>
+            </span>
+            <h3 class="mt-3 font-serif text-[24px] font-bold text-primary dark:text-ink canvas:mt-5 canvas:text-[36px]">Account created!</h3>
+            <p class="mx-auto mt-2 max-w-[440px] text-[14px] text-muted canvas:text-[19px]">
+              Your investor account for <b class="text-ink" id="done-number">+91</b> is ready.
+              Next, complete your investor profile from the dashboard.
+            </p>
+
+            <a class="primary-button mt-5 canvas:mt-8" href="../dashboard/index.html" id="go-to-dashboard">
+              Go to Dashboard
+              <svg class="icon size-[26px]" aria-hidden="true"><use href="#icon-arrow"/></svg>
+            </a>
+          </div>
+
+
+          <!-- Footer link (hidden on the last step) and result message -->
+          <p class="mt-4 text-center text-[14px] canvas:mt-6 canvas:text-[20px]" id="login-instead">
+            Already have an account?
+            <a class="font-bold text-primary underline underline-offset-2 dark:text-[#9A6F2C]" href="index.html">Login</a>
+          </p>
+
+          <p class="form-status mt-2 min-h-[18px] text-center text-[15px] text-primary canvas:text-[17px]" id="form-status" role="status"></p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+
+
+  <!-- Shared layout + theme switch, then this page's form -->
+  <script src="scripts/layout.js"></script>
+  <script src="scripts/register.js"></script>
+</body>
+</html>

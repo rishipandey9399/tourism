@@ -1,0 +1,1436 @@
+/* =============================================================================
+   HERITAGE CAPITAL – TAILWIND SOURCE STYLESHEET
+   -----------------------------------------------------------------------------
+   This file is compiled by Tailwind into home/styles/home.css (never edit that
+   generated file by hand). Rebuild after changing this file or any class in
+   index.html / scripts:
+
+       npm run build:home        (one-off build)
+       npm run watch:home        (rebuild on every save)
+
+   How the styling is organised
+   ----------------------------
+   1. Design tokens (@theme)  – colours, fonts, sizes, easings, breakpoints.
+   2. Themes                  – "dark" (ivory / black / gold, the default) and
+                                "light" (the login page's saffron / maroon).
+                                Switching theme only swaps CSS variables.
+   3. Base                    – page-wide element defaults.
+   4. Components              – reusable pieces (buttons, eyebrow labels, …).
+   5. One block per page section, in page order, each with its animations.
+
+   Layout, spacing and typography live as Tailwind classes in index.html.
+   This file holds what utility classes can't express cleanly: keyframes,
+   pseudo-elements, 3D transforms and SVG styling.
+   ============================================================================= */
+
+@import "tailwindcss" source(none);
+@import "./map-outline.css";
+
+/* Files Tailwind scans for class names */
+@source "../../index.html";
+@source "../scripts";
+
+/* `light:` variant – e.g. class="light:bg-white" applies only in the light theme */
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+
+/* =============================================================================
+   1. DESIGN TOKENS
+   Every token becomes a Tailwind utility, e.g. --color-ink → text-ink, bg-ink.
+   Colour tokens are overridden per theme in section 2.
+   ============================================================================= */
+@theme {
+  /* ---- Breakpoints (match the original design's layout changes) ---- */
+  --breakpoint-sm: 641px;
+  --breakpoint-md: 721px;   /* tablet: multi-column layouts start */
+  --breakpoint-lg: 1001px;  /* desktop: side-by-side sections */
+  --breakpoint-xl: 1101px;  /* wide desktop: header navigation appears */
+  --breakpoint-2xl: 1181px; /* figures band shows 4 across */
+
+  /* ---- Fonts ---- */
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Jost", system-ui, sans-serif;
+  --font-hindi: "Yatra One", serif;
+
+  /* ---- Fluid type sizes ---- */
+  --text-display: clamp(44px, 7.6vw, 132px);   /* hero heading */
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.02em;
+  --text-h2: clamp(42px, 6.2vw, 96px);         /* section headings */
+  --text-h2--line-height: 0.98;
+  --text-h2--letter-spacing: -0.02em;
+  --text-lead: clamp(16px, 1.2vw, 18px);       /* intro paragraphs */
+
+  /* ---- Easings ---- */
+  --ease-smooth: cubic-bezier(0.7, 0, 0.2, 1);  /* in-out, for slides and wipes */
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);   /* fast-out, for reveals */
+
+  /* ---- Fixed brand colours (same in both themes) ---- */
+  --color-night: #0e0a0b;      /* near-black used on photos and overlays */
+  --color-night-2: #161011;
+  --color-open: #3e9b6a;       /* "Open for intentions" status dot */
+  --color-tender: #c9a25e;     /* "Tender open" status dot */
+
+  /* ---- Theme colours: values for the DARK theme (default) ---- */
+  --color-page: #f4ecdd;                    /* page background (ivory) */
+  --color-ink: #1e1416;                     /* main text */
+  --color-muted: rgb(30 20 22 / 0.64);      /* secondary text */
+  --color-line: rgb(0 0 0 / 0.16);          /* hairlines and borders */
+  --color-accent: #a9813f;                  /* gold: labels, icons, buttons */
+  --color-accent-soft: #9a6f2c;             /* italic highlight in headings */
+  --color-surface: #ffffff;                 /* cards and panels */
+  --color-surface-soft: #efe5d2;            /* map background */
+  --color-brand: #000000;                   /* map pins, active chips */
+  --color-brand-strong: #1e1416;            /* selected map pin */
+  --color-chrome-from: #000000;             /* header (scrolled) + footer gradient */
+  --color-chrome-to: #000000;
+}
+
+
+/* =============================================================================
+   2. THEMES
+   The <html> element carries data-theme="dark" or data-theme="light"
+   (set by the small script at the top of index.html).
+   ============================================================================= */
+@layer base {
+  /* ---- Light theme: the login page's saffron / maroon palette ---- */
+  [data-theme="light"] {
+    --color-page: #fff4e5;
+    --color-ink: #422416;
+    --color-muted: #80543b;
+    --color-line: rgb(217 166 108 / 0.45);
+    --color-accent: #e88900;
+    --color-accent-soft: #a93612;
+    --color-surface: #fffaf2;
+    --color-surface-soft: #fce5cc;
+    --color-brand: #a93612;
+    --color-brand-strong: #713018;
+    --color-chrome-from: #5a2412;
+    --color-chrome-to: #3a1a0e;
+  }
+
+  /* ---- Dark backgrounds (photos, black sections, header, footer) ----
+     Add class "on-dark" to any area with a dark background: it flips the text
+     tokens to light colours so every utility inside (text-ink, text-muted,
+     border-line, text-accent …) stays readable. */
+  .on-dark {
+    --color-ink: #f4ecdd;
+    --color-muted: rgb(244 236 221 / 0.62);
+    --color-line: rgb(233 204 142 / 0.18);
+    --color-accent: #c9a25e;
+    --color-accent-soft: #e9cc8e;
+    color: var(--color-ink);
+  }
+
+  [data-theme="light"] .on-dark {
+    --color-ink: #fff4e5;
+    --color-muted: rgb(252 229 204 / 0.8);
+    --color-line: rgb(252 229 204 / 0.25);
+    --color-accent: #e88900;
+    --color-accent-soft: #f5a43a;
+  }
+
+  /* Header and footer use pure white text in the dark theme */
+  .on-chrome {
+    --color-ink: #ffffff;
+    --color-muted: rgb(255 255 255 / 0.62);
+    --color-line: rgb(255 255 255 / 0.14);
+  }
+
+  [data-theme="light"] .on-chrome {
+    --color-ink: #fff4e5;
+    --color-muted: rgb(255 244 229 / 0.7);
+    --color-line: rgb(252 229 204 / 0.18);
+  }
+}
+
+
+/* =============================================================================
+   3. BASE
+   ============================================================================= */
+@layer base {
+  html {
+    background: var(--color-page);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--color-ink);
+    background: var(--color-page);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Light theme: a soft peach glow at the top of the page */
+  [data-theme="light"] body {
+    background:
+      radial-gradient(ellipse at 62% 0%, #fce5cc, transparent 40%) fixed,
+      var(--color-page);
+  }
+
+  /* Page scrolling is locked while the preloader, menu or lightbox is open */
+  body[data-locked] {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-night);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-soft);
+    outline-offset: 3px;
+  }
+
+  /* Line icons drawn with <svg class="icon"> */
+  .icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+
+/* =============================================================================
+   4. SHARED COMPONENTS
+   ============================================================================= */
+
+/* ---- Page container: max width + side gutter ---- */
+@utility container-page {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 5vw, 72px);
+}
+
+/* ---- Vertical space above and below a section ---- */
+@utility py-section {
+  padding-block: clamp(80px, 11vw, 160px);
+}
+
+@layer components {
+
+  /* ---- Eyebrow: small uppercase label with a short rule before it ---- */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 40px;
+    height: 1px;
+    background: currentColor;
+  }
+
+  /* ---- Italic highlight inside headings ---- */
+  .heading-highlight {
+    font-style: italic;
+    color: var(--color-accent-soft);
+  }
+
+  /* ---- Buttons ----
+     A pill with a colour fill that slides up from the bottom on hover. */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 32px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: color 0.5s var(--ease-smooth);
+  }
+
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--btn-hover-fill, var(--color-accent-soft));
+    transform: translateY(101%);
+    transition: transform 0.6s var(--ease-smooth);
+  }
+
+  .btn:hover::before {
+    transform: none;
+  }
+
+  .btn .icon {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.5s var(--ease-smooth);
+  }
+
+  .btn:hover .icon {
+    transform: translateX(4px);
+  }
+
+  /* Smaller button used in the header */
+  .btn-sm {
+    padding: 13px 24px;
+    font-size: 12px;
+  }
+
+  /* Solid button: gold in the dark theme, maroon gradient in the light theme */
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-night);
+  }
+
+  [data-theme="light"] .btn-primary {
+    --btn-hover-fill: #e88900;
+    background: linear-gradient(110deg, #a93612, #713018);
+    color: #fff9f0;
+  }
+
+  /* Outline button */
+  .btn-outline {
+    border: 1px solid rgb(30 20 22 / 0.35);
+  }
+
+  .btn-outline:hover {
+    color: var(--color-night);
+  }
+
+  .on-dark .btn-outline {
+    border-color: rgb(244 236 221 / 0.4);
+  }
+
+  [data-theme="light"] .btn-outline {
+    --btn-hover-fill: #e88900;
+    border-color: #d9a66c;
+  }
+
+  [data-theme="light"] .btn-outline:hover {
+    color: #fff9f0;
+  }
+
+  [data-theme="light"] .on-dark .btn-outline {
+    border-color: rgb(255 244 229 / 0.5);
+  }
+
+  /* ---- Scroll reveal ----
+     Elements with .reveal fade up when they scroll into view
+     (scripts/main.js adds .is-visible). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition:
+      opacity 1.2s var(--ease-soft),
+      transform 1.2s var(--ease-soft);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ---- Line reveal ----
+     Each line of a heading slides up from behind a mask. Wrap the line:
+     <span class="line-mask"><span>Text</span></span>; set --i for the delay. */
+  .line-mask {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+  }
+
+  .line-mask > span {
+    display: block;
+    transform: translateY(110%);
+    transition: transform 1.3s var(--ease-soft);
+    transition-delay: calc(var(--i, 0) * 120ms + 0.2s);
+  }
+
+  .line-mask.is-visible > span {
+    transform: none;
+  }
+}
+
+
+/* =============================================================================
+   5. PAGE SECTIONS (in page order)
+   ============================================================================= */
+@layer components {
+
+  /* ---------------------------------------------------------------------------
+     5.1 PRELOADER
+     Counts to 100, then the two halves split open to reveal the page.
+     --------------------------------------------------------------------------- */
+  .preloader-half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50.5%;
+    background: #000;
+    transition: transform 1.3s var(--ease-smooth);
+  }
+
+  [data-theme="light"] .preloader-half {
+    background: #713018;
+  }
+
+  [data-theme="light"] .preloader-half--bottom {
+    background: #5a2412;
+  }
+
+  .preloader[data-done] .preloader-half--top {
+    transform: translateY(-100%);
+  }
+
+  .preloader[data-done] .preloader-half--bottom {
+    transform: translateY(100%);
+  }
+
+  .preloader[data-done] .preloader-content {
+    opacity: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.2 CUSTOM CURSOR (mouse only)
+     A ring that follows the pointer and grows with a label over photos.
+     --------------------------------------------------------------------------- */
+  .cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 150;
+    width: 36px;
+    height: 36px;
+    margin: -18px 0 0 -18px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--color-accent);
+    border-radius: 50%;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-night);
+    pointer-events: none;
+    transition:
+      width 0.35s var(--ease-soft),
+      height 0.35s var(--ease-soft),
+      margin 0.35s var(--ease-soft),
+      background 0.35s;
+  }
+
+  .cursor[data-big] {
+    width: 88px;
+    height: 88px;
+    margin: -44px 0 0 -44px;
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-soft);
+  }
+
+  .cursor span {
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .cursor[data-big] span {
+    opacity: 1;
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .cursor {
+      display: none;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.3 HEADER
+     Transparent over the hero; once scrolled it becomes a floating rounded bar
+     (data-solid) and slides away while scrolling down (data-hidden).
+     --------------------------------------------------------------------------- */
+  .site-header {
+    transition:
+      transform 0.6s var(--ease-smooth),
+      background 0.5s,
+      inset 0.5s var(--ease-smooth),
+      border-radius 0.5s var(--ease-smooth);
+  }
+
+  .site-header[data-solid] {
+    inset: 12px 16px auto;
+    border-radius: 22px;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background: linear-gradient(160deg, var(--color-chrome-from), var(--color-chrome-to));
+    box-shadow: 0 14px 40px rgb(0 0 0 / 0.18);
+  }
+
+  .site-header[data-hidden] {
+    transform: translateY(-100%);
+  }
+
+  .site-header[data-solid][data-hidden] {
+    transform: translateY(calc(-100% - 24px));
+  }
+
+  /* Underline that grows under the hovered / current nav link */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease-smooth);
+  }
+
+  .nav-link:hover::after,
+  .nav-link[data-active]::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* Register button in the header: cream on maroon in the light theme */
+  [data-theme="light"] .site-header .btn-primary {
+    background: #fff4e5;
+    color: #713018;
+  }
+
+  /* Theme switch: the sun shows in the light theme, the moon in the dark theme */
+  .theme-icon {
+    grid-area: 1 / 1;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    transition:
+      transform 0.5s var(--ease-smooth),
+      opacity 0.4s;
+  }
+
+  .theme-icon--moon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+
+  [data-theme="dark"] .theme-icon--sun {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+  }
+
+  [data-theme="dark"] .theme-icon--moon {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Menu button: two lines that turn into a cross while the menu is open */
+  .burger-line {
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    height: 1px;
+    background: currentColor;
+    transition:
+      transform 0.5s var(--ease-smooth),
+      top 0.5s var(--ease-smooth);
+  }
+
+  .burger-line:nth-child(1) {
+    top: 21px;
+  }
+
+  .burger-line:nth-child(2) {
+    top: 28px;
+  }
+
+  body[data-menu-open] .burger-line:nth-child(1) {
+    top: 24.5px;
+    transform: rotate(45deg);
+  }
+
+  body[data-menu-open] .burger-line:nth-child(2) {
+    top: 24.5px;
+    transform: rotate(-45deg);
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.4 FULL-SCREEN MENU
+     Wipes down from the top; each link line slides up in turn and the photo
+     on the right changes to match the hovered link.
+     --------------------------------------------------------------------------- */
+  .menu {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+    transition: clip-path 1s var(--ease-smooth);
+  }
+
+  body[data-menu-open] .menu {
+    clip-path: inset(0 0 0 0);
+    visibility: visible;
+  }
+
+  .menu-link .line-mask > span {
+    transition-delay: calc(var(--i) * 70ms + 0.35s);
+  }
+
+  body[data-menu-open] .menu-link .line-mask > span {
+    transform: none;
+  }
+
+  .menu-link:hover {
+    color: var(--color-ink);
+    transform: translateX(16px);
+    font-style: italic;
+  }
+
+  /* Photo cross-fade (also used by the sectors photo, 5.8) */
+  .crossfade-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.08);
+    transition:
+      opacity 0.8s,
+      transform 1.4s var(--ease-soft);
+  }
+
+  .crossfade-img.is-active {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.5 HERO
+     Full-screen video. It zooms out once the preloader finishes, and shrinks
+     into a rounded card as you scroll (scripts/main.js).
+     --------------------------------------------------------------------------- */
+  .hero-video {
+    transform: scale(1.15);
+    transition: transform 2.6s var(--ease-soft);
+  }
+
+  body[data-ready] .hero-video {
+    transform: scale(1);
+  }
+
+  /* Darkening over the video so the text stays readable */
+  .hero-shade {
+    background:
+      radial-gradient(ellipse at 30% 60%, rgb(14 10 11 / 0.15), rgb(14 10 11 / 0.7) 75%),
+      linear-gradient(180deg, rgb(14 10 11 / 0.55), transparent 30%, transparent 50%, rgb(14 10 11 / 0.92));
+  }
+
+  /* Paragraph, buttons and status line fade in after the heading */
+  .hero-intro {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 1.2s 0.9s,
+      transform 1.2s 0.9s var(--ease-soft);
+  }
+
+  body[data-ready] .hero-intro {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Pulsing dot in "Land bank open" */
+  .pulse-dot {
+    box-shadow: 0 0 0 0 rgb(201 162 94 / 0.6);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    70% {
+      box-shadow: 0 0 0 12px rgb(201 162 94 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(201 162 94 / 0);
+    }
+  }
+
+  /* "Scroll to explore": a line that drips down below the vertical text */
+  .scroll-hint::after {
+    content: "";
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(var(--color-accent), transparent);
+    animation: drip 2.2s var(--ease-smooth) infinite;
+  }
+
+  @keyframes drip {
+    0% {
+      transform: scaleY(0);
+      transform-origin: top;
+    }
+    50% {
+      transform: scaleY(1);
+      transform-origin: top;
+    }
+    51% {
+      transform-origin: bottom;
+    }
+    100% {
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.6 FIGURES BAND
+     Each figure has a progress ring (SVG) that fills when scrolled into view,
+     while the number counts up (scripts/main.js).
+     --------------------------------------------------------------------------- */
+  .ring-svg {
+    transform: rotate(-90deg); /* start the ring at 12 o'clock */
+  }
+
+  .ring-track {
+    stroke: rgb(0 0 0 / 0.12);
+  }
+
+  .ring-progress {
+    stroke: url(#ring-gold);
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1; /* empty until revealed */
+    transition: stroke-dashoffset 2s var(--ease-soft) 0.2s;
+  }
+
+  /* --fill is how much of the ring stays empty (0 = full) */
+  .is-visible .ring-progress {
+    stroke-dashoffset: var(--fill, 0.15);
+  }
+
+  [data-theme="light"] .ring-track {
+    stroke: #fce5cc;
+  }
+
+  [data-theme="light"] .ring-progress {
+    stroke: url(#ring-saffron);
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.7 LAND-PARCEL MAP
+     A CSS 3D model of the state: stacked "slabs" cut to the state outline give
+     it thickness, and pins stand up from the surface always facing the viewer.
+     The markup for pins, list, chips and panel is built by scripts/land-map.js.
+     --------------------------------------------------------------------------- */
+
+  /* Filter chips */
+  .map-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    background: var(--color-surface);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition:
+      border-color 0.25s,
+      background 0.25s,
+      color 0.25s;
+  }
+
+  .map-chip:hover {
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+  }
+
+  .map-chip[aria-pressed="true"] {
+    background: var(--color-brand);
+    border-color: var(--color-brand);
+    color: #f4ecdd;
+  }
+
+  [data-theme="light"] .map-chip[aria-pressed="true"] {
+    background: linear-gradient(110deg, #a93612, #713018);
+    color: #fff9f0;
+  }
+
+  /* Small coloured dot showing a parcel's status */
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--color-open);
+  }
+
+  .status-dot--tender {
+    background: var(--color-tender);
+  }
+
+  /* Parcel list rows */
+  .map-item:hover,
+  .map-item[aria-current="true"] {
+    background: rgb(78 21 32 / 0.07);
+  }
+
+  [data-theme="light"] .map-item:hover,
+  [data-theme="light"] .map-item[aria-current="true"] {
+    background: #fce5cc;
+  }
+
+  /* The map viewport: dotted background + 3D perspective */
+  .map-viewport {
+    background:
+      radial-gradient(ellipse at 50% 60%, var(--color-surface), transparent 65%),
+      radial-gradient(rgb(78 21 32 / 0.09) 1px, transparent 1.5px) 0 0 / 24px 24px,
+      var(--color-surface-soft);
+    perspective: 1400px;
+    perspective-origin: 50% 30%;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .map-viewport[data-dragging] {
+    cursor: grabbing;
+  }
+
+  /* The rotating model; --map-width is set by the script to fit the viewport */
+  .map-stage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--map-width, 780px);
+    aspect-ratio: 580 / 384;
+    margin-left: calc(var(--map-width, 780px) / -2);
+    margin-top: calc(var(--map-width, 780px) * -0.331);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /* Layers cut to the state outline (see styles/map-outline.css) */
+  .map-shadow,
+  .map-slab,
+  .map-surface {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    -webkit-mask: var(--map-outline) center / 100% 100% no-repeat;
+    mask: var(--map-outline) center / 100% 100% no-repeat;
+  }
+
+  .map-shadow {
+    inset: 6%;
+    background: #3a1a20;
+    filter: blur(30px);
+    opacity: 0.35;
+    transform: translateZ(-60px);
+  }
+
+  .map-surface {
+    background: linear-gradient(135deg, #fffdf8, #f6eddd 40%, #ead9bd 75%, #d9bd93);
+  }
+
+  /* Moving highlight on the surface; --light-x follows the rotation */
+  .map-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--light-x, 30%) 20%, rgb(255 255 255 / 0.6), transparent 45%);
+    mix-blend-mode: soft-light;
+  }
+
+  /* Pins */
+  .map-pin {
+    position: absolute;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    transition: opacity 0.4s;
+  }
+
+  .map-pin[data-filtered-out] {
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  /* "Billboard": the script counter-rotates it so the pin faces the viewer */
+  .map-pin-billboard {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-style: preserve-3d;
+    transform-origin: 0 0;
+  }
+
+  .map-pin-stem {
+    position: absolute;
+    left: -1px;
+    bottom: 0;
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(var(--color-brand), transparent);
+  }
+
+  .map-pin-head {
+    position: absolute;
+    left: 50%;
+    bottom: 40px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--color-brand);
+    color: #f4ecdd;
+    transform: translate(-50%, 0);
+    box-shadow: 0 6px 16px rgb(78 21 32 / 0.35);
+    transition:
+      transform 0.3s,
+      background 0.3s;
+  }
+
+  .map-pin-head svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+  }
+
+  /* Status dot on the pin's corner */
+  .map-pin-head::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--color-open);
+  }
+
+  .map-pin--tender .map-pin-head::after {
+    background: var(--color-tender);
+  }
+
+  .map-pin:hover .map-pin-head {
+    transform: translate(-50%, -4px) scale(1.08);
+  }
+
+  .map-pin[data-selected] .map-pin-head {
+    background: var(--color-brand-strong);
+    box-shadow:
+      0 0 0 6px rgb(78 21 32 / 0.15),
+      0 10px 24px rgb(0 0 0 / 0.3);
+  }
+
+  /* Place name shown above a hovered or selected pin */
+  .map-pin-label {
+    position: absolute;
+    left: 50%;
+    bottom: 84px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: var(--color-brand-strong);
+    color: #fff;
+    font-size: 11.5px;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .map-pin:hover .map-pin-label,
+  .map-pin[data-selected] .map-pin-label {
+    opacity: 1;
+  }
+
+  /* Pulsing dot where the pin touches the map */
+  .map-pin-base {
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-brand);
+    animation: map-ping 2.4s infinite;
+  }
+
+  @keyframes map-ping {
+    0% {
+      box-shadow: 0 0 0 0 rgb(78 21 32 / 0.5);
+    }
+    70% {
+      box-shadow: 0 0 0 12px rgb(78 21 32 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(78 21 32 / 0);
+    }
+  }
+
+  /* Parcel details panel: slides up when a parcel is selected */
+  .map-panel {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(24px) scale(0.97);
+    transition:
+      transform 0.5s var(--ease-soft),
+      opacity 0.4s;
+  }
+
+  .map-panel[data-open] {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.8 INVESTMENT SECTORS
+     Hovering or tapping a sector opens its description and swaps the photo.
+     --------------------------------------------------------------------------- */
+  .sector {
+    transition:
+      color 0.4s,
+      padding 0.6s var(--ease-soft);
+  }
+
+  .sector:hover,
+  .sector[aria-expanded="true"] {
+    color: var(--color-ink);
+    padding-left: 18px;
+  }
+
+  .sector-text {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.6s var(--ease-soft),
+      opacity 0.5s,
+      margin 0.5s;
+  }
+
+  .sector[aria-expanded="true"] .sector-text {
+    max-height: 60px;
+    margin-top: 6px;
+    opacity: 1;
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.9 HOW IT WORKS – five-step journey
+     A curved path (SVG) draws itself through the step circles while you
+     scroll; each circle lights up and its icon draws in. Built by
+     scripts/journey.js. Colours come from the --journey-* variables.
+     --------------------------------------------------------------------------- */
+  .journey {
+    --journey-path-start: #e9cc8e;
+    --journey-path-mid: #c9a25e;
+    --journey-path-end: #c96b4a;
+    --journey-trail: rgb(233 204 142 / 0.3);
+    --journey-card: rgb(14 10 11 / 0.4);
+    --journey-card-line: rgb(233 204 142 / 0.22);
+    --journey-text: #f4ecdd;
+    --journey-muted: rgb(244 236 221 / 0.74);
+    --journey-dot: #161011;
+    --journey-dot-line: rgb(233 204 142 / 0.32);
+    --journey-icon: rgb(244 236 221 / 0.62);
+    --journey-dot-active: #0e0a0b;
+    --journey-icon-active: #e9cc8e;
+    --journey-ring: #c9a25e;
+    --journey-number: #c9a25e;
+    --journey-number-text: #0e0a0b;
+    --journey-tag: rgb(201 162 94 / 0.16);
+    --journey-tag-text: #e9cc8e;
+    position: relative;
+    color: var(--journey-text);
+  }
+
+  [data-theme="light"] .journey {
+    --journey-path-start: #f5a43a;
+    --journey-path-mid: #e88900;
+    --journey-path-end: #a93612;
+    --journey-trail: rgb(232 137 0 / 0.35);
+    --journey-card: rgb(169 54 18 / 0.12);
+    --journey-card-line: rgb(232 137 0 / 0.32);
+    --journey-text: #fff4e5;
+    --journey-muted: rgb(252 229 204 / 0.72);
+    --journey-dot: #1a0e08;
+    --journey-dot-line: rgb(232 137 0 / 0.42);
+    --journey-icon: rgb(252 229 204 / 0.7);
+    --journey-dot-active: #a93612;
+    --journey-icon-active: #fff4e5;
+    --journey-ring: #e88900;
+    --journey-number: #e88900;
+    --journey-number-text: #1a0e08;
+    --journey-tag: rgb(232 137 0 / 0.18);
+    --journey-tag-text: #f5a43a;
+  }
+
+  /* SVG layer behind the steps */
+  .journey-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .journey-gradient-start {
+    stop-color: var(--journey-path-start);
+  }
+
+  .journey-gradient-mid {
+    stop-color: var(--journey-path-mid);
+  }
+
+  .journey-gradient-end {
+    stop-color: var(--journey-path-end);
+  }
+
+  /* Dotted guide line */
+  .journey-trail {
+    fill: none;
+    stroke: var(--journey-trail);
+    stroke-width: 3;
+    stroke-dasharray: 2 10;
+    stroke-linecap: round;
+  }
+
+  /* The coloured line that draws itself (dash offset set by the script) */
+  .journey-path {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+
+  /* One step: card | circle | card, alternating sides */
+  .journey-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    align-items: center;
+    min-height: 200px;
+  }
+
+  .journey-dot {
+    position: relative;
+    z-index: 1;
+    grid-column: 2;
+    justify-self: center;
+    width: 84px;
+    height: 84px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--journey-dot-line);
+    border-radius: 50%;
+    background: var(--journey-dot);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.06);
+    transition:
+      border-color 0.5s,
+      background 0.5s,
+      transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .journey-dot svg {
+    width: 36px;
+    height: 36px;
+    color: var(--journey-icon);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    transition: color 0.5s;
+  }
+
+  /* Step number badge */
+  .journey-number {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--journey-number);
+    color: var(--journey-number-text);
+    font: 800 0.78rem / 30px system-ui, sans-serif;
+    text-align: center;
+  }
+
+  .journey-step[data-active] .journey-dot {
+    border-color: var(--journey-ring);
+    background: var(--journey-dot-active);
+    transform: scale(1.08);
+  }
+
+  .journey-step[data-active] .journey-dot svg {
+    color: var(--journey-icon-active);
+  }
+
+  .journey-card {
+    max-width: 470px;
+    padding: 28px 30px;
+    border: 1px solid var(--journey-card-line);
+    border-radius: 24px;
+    background: var(--journey-card);
+    box-shadow: 0 24px 50px rgb(0 0 0 / 0.28);
+    transition:
+      opacity 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .journey-step:nth-child(odd) .journey-card {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .journey-step:nth-child(even) .journey-card {
+    grid-column: 3;
+  }
+
+  .journey-card h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+  }
+
+  .journey-card p {
+    margin: 8px 0 0;
+    color: var(--journey-muted);
+  }
+
+  .journey-tag {
+    display: inline-flex;
+    margin-top: 16px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--journey-tag);
+    color: var(--journey-tag-text);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  /* Animation states (only when motion is allowed: .journey[data-animate]) */
+  .journey[data-animate] .journey-dot svg {
+    stroke-dashoffset: 1; /* icon hidden */
+  }
+
+  .journey[data-animate] .journey-step[data-active] .journey-dot svg {
+    stroke-dashoffset: 0; /* icon draws in */
+    transition:
+      stroke-dashoffset 1.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+      color 0.5s;
+  }
+
+  .journey[data-animate] .journey-step:not([data-seen]) .journey-card {
+    opacity: 0;
+    transform: translateY(34px);
+  }
+
+  /* Phones: circles on the left, cards on the right */
+  @media (max-width: 720px) {
+    .journey-step {
+      grid-template-columns: 70px 1fr;
+      min-height: 0;
+      margin-bottom: 26px;
+    }
+
+    .journey-dot {
+      grid-column: 1 !important;
+      grid-row: 1;
+      align-self: start;
+      width: 60px;
+      height: 60px;
+    }
+
+    .journey-dot svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .journey-step:nth-child(odd) .journey-card,
+    .journey-step:nth-child(even) .journey-card {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: stretch;
+      max-width: none;
+    }
+
+    .journey-card {
+      padding: 22px;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.10 WHY INVEST – photo mosaic
+     Tiles wipe in from the bottom one after another; captions grow on hover;
+     clicking a tile opens the lightbox (5.13).
+     --------------------------------------------------------------------------- */
+  .tile-reveal {
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 1.5s var(--ease-soft);
+  }
+
+  .tile-reveal img {
+    transform: scale(1.25);
+    transition: transform 2s var(--ease-soft);
+  }
+
+  .tile-reveal.is-visible {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .tile-reveal.is-visible img {
+    transform: scale(1);
+  }
+
+  /* Caption detail: hidden on desktop until hover / keyboard focus */
+  @media (min-width: 1001px) {
+    .tile-detail {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition:
+        max-height 0.6s var(--ease-soft),
+        opacity 0.5s;
+    }
+
+    .tile:hover .tile-detail,
+    .tile:focus-within .tile-detail {
+      max-height: 80px;
+      opacity: 1;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.11 HELP & CONTACT
+     Contact pills tint on hover; guide rows nudge right and their title
+     changes colour.
+     --------------------------------------------------------------------------- */
+  .help-link {
+    transition:
+      border-color 0.4s,
+      background 0.4s;
+  }
+
+  .help-link:hover {
+    border-color: var(--color-accent);
+    background: rgb(201 162 94 / 0.08);
+  }
+
+  [data-theme="light"] .help-link:hover {
+    background: #fce5cc;
+  }
+
+  .guide-row {
+    transition: padding 0.6s var(--ease-soft);
+  }
+
+  .guide-row:hover {
+    padding-left: 16px;
+  }
+
+  .guide-row:hover .guide-title {
+    color: var(--color-accent-soft);
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.12 FOOTER
+     Lattice (jali) texture fading in from the top-right corner.
+     --------------------------------------------------------------------------- */
+  .footer-jali {
+    color: var(--color-accent);
+    opacity: 0.07;
+    -webkit-mask-image: radial-gradient(ellipse 60% 80% at 100% 0%, #000, transparent 70%);
+    mask-image: radial-gradient(ellipse 60% 80% at 100% 0%, #000, transparent 70%);
+  }
+
+  /* Lotus divider above the copyright line */
+  .footer-divider path {
+    fill: none;
+    stroke: rgb(233 204 142 / 0.35);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .footer-divider .footer-lotus {
+    stroke: var(--color-accent);
+  }
+
+  /* ---------------------------------------------------------------------------
+     5.13 LIGHTBOX
+     Full-screen photo viewer for the mosaic.
+     --------------------------------------------------------------------------- */
+  .lightbox {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.5s,
+      visibility 0.5s;
+  }
+
+  .lightbox[data-open] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .lightbox img {
+    transform: scale(0.94);
+    transition: transform 0.7s var(--ease-soft);
+  }
+
+  .lightbox[data-open] img {
+    transform: none;
+  }
+}
+
+
+/* =============================================================================
+   6. REDUCED MOTION
+   People who ask their system for less motion get the final state at once.
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .reveal,
+  .line-mask > span,
+  .tile-reveal,
+  .tile-reveal img {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+}

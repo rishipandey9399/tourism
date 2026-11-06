@@ -1,0 +1,486 @@
+/* =============================================================================
+   LOGIN PAGE – TAILWIND SOURCE STYLESHEET
+   -----------------------------------------------------------------------------
+   Compiled by Tailwind into styles/login.css (never edit that file by hand):
+
+       npm run build:login        (one-off build)
+       npm run watch:login        (rebuild on every save)
+
+   Two layouts
+   -----------
+   • STACKED (phones and windows taller than wide) – the default, mobile-first
+     styles: brand, heading, stats and the login card stacked in one column,
+     compact enough to fit one screen.
+   • CANVAS (windows at least as wide as tall, over 700px) – use the `canvas:`
+     variant. The page is drawn on a 1697 × 927 design canvas with absolutely
+     positioned parts; scripts/login.js scales it to the window and stretches
+     the spacing so it fills the screen edge to edge without scrolling.
+
+   Two themes
+   ----------
+   • light (default) – peach / saffron / maroon.
+   • dark            – the heritage portal's ivory / black / gold. Use `dark:`.
+   ============================================================================= */
+
+@import "tailwindcss" source(none);
+
+@source "../index.html";
+@source "../register.html";
+@source "../scripts";
+
+
+/* =============================================================================
+   1. VARIANTS
+   ============================================================================= */
+
+/* dark: – applies when <html data-theme="dark"> */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* canvas: – wide windows that show the full design canvas */
+@custom-variant canvas (@media (min-width: 701px) and (min-aspect-ratio: 1/1));
+
+/* tablet: – stacked layout on wider screens held upright (centred column) */
+@custom-variant tablet (@media (min-width: 701px) and (max-aspect-ratio: 999/1000));
+
+/* short: – stacked layout on short screens (drops decorative parts) */
+@custom-variant short {
+  @media (max-width: 700px) and (max-height: 720px) {
+    @slot;
+  }
+  @media (max-aspect-ratio: 999/1000) and (max-height: 720px) {
+    @slot;
+  }
+}
+
+
+/* =============================================================================
+   2. DESIGN TOKENS (light theme values; dark theme overrides below)
+   Each colour becomes a utility: text-primary, bg-surface, border-line …
+   ============================================================================= */
+@theme {
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+
+  --color-primary: #a93612;        /* headings highlight, links, stat numbers */
+  --color-primary-dark: #713018;   /* button gradient end, dialog button */
+  --color-accent: #e88900;         /* icons, rules, focus */
+  --color-page: #fff4e5;           /* page background */
+  --color-surface: #fffaf2;        /* cards, stat boxes */
+  --color-soft: #fce5cc;           /* soft peach glow */
+  --color-line: #d9a66c;           /* input borders, dividers */
+  --color-ink: #422416;            /* main text */
+  --color-muted: #80543b;          /* labels, secondary text */
+}
+
+@layer base {
+  [data-theme="dark"] {
+    --color-primary: #1e1416;
+    --color-primary-dark: #000000;
+    --color-accent: #a9813f;
+    --color-page: #f4ecdd;
+    --color-surface: #fbf7ef;
+    --color-soft: #ebdfc8;
+    --color-line: #c9b48e;
+    --color-ink: #1e1416;
+    --color-muted: #6b5a48;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    line-height: normal; /* the design was drawn with the browser's default line height */
+    color: var(--color-ink);
+    background: var(--color-page);
+  }
+
+  /* Wide windows: the page never scrolls (the canvas is scaled to fit) */
+  @variant canvas {
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+  }
+
+  :is(button, a):focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 4px;
+  }
+
+  input::placeholder {
+    color: #7d7b77;
+    opacity: 1;
+  }
+
+  /* Line icons drawn with <svg class="icon"> */
+  .icon {
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+
+/* =============================================================================
+   3. COMPONENTS
+   ============================================================================= */
+@layer components {
+
+  /* ---------------------------------------------------------------------------
+     3.1 PAGE BACKGROUND
+     Soft peach glows (ivory in the dark theme). The scene uses a simple
+     gradient in the stacked layout and the full glow on the canvas.
+     --------------------------------------------------------------------------- */
+  .page-glow {
+    background:
+      radial-gradient(ellipse at 42% 68%, var(--color-soft) 0, transparent 45%),
+      radial-gradient(ellipse at 62% 0%, var(--color-soft) 0, transparent 37%),
+      linear-gradient(120deg, var(--color-soft), var(--color-page));
+  }
+
+  .scene {
+    background: linear-gradient(140deg, var(--color-soft), var(--color-page));
+  }
+
+  @variant canvas {
+    .scene {
+      background:
+        radial-gradient(ellipse at 42% 68%, var(--color-soft) 0, transparent 45%),
+        radial-gradient(ellipse at 62% 0%, var(--color-soft) 0, transparent 37%),
+        linear-gradient(120deg, var(--color-soft), var(--color-page));
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.2 ARTWORK
+     All pictures come from one image (images/login-artwork.png) and are cut
+     out of it with SVG clip paths / masks. In the dark theme they get a warm
+     sepia tint so they sit on ivory.
+     --------------------------------------------------------------------------- */
+  [data-theme="dark"] .artwork use,
+  [data-theme="dark"] .artwork-photo {
+    filter: sepia(0.45) saturate(0.75) hue-rotate(-8deg);
+  }
+
+  /* Fort photo: fade out the top (sky) and the right edge so it blends
+     into the page. Two gradient masks, kept only where both are opaque. */
+  .photo-fade {
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 24%),
+      linear-gradient(to right, #000 68%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to bottom, transparent 0%, #000 24%),
+      linear-gradient(to right, #000 68%, transparent 100%);
+    mask-composite: intersect;
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.3 EYEBROW ("INVEST IN MADHYA PRADESH ✿ MADHYA PRADESH")
+     Fading rules before and after the label.
+     --------------------------------------------------------------------------- */
+  .eyebrow::before,
+  .eyebrow::after {
+    content: "";
+    height: 1px;
+  }
+
+  .eyebrow::before {
+    width: 39px;
+    background: linear-gradient(90deg, transparent, var(--color-line));
+  }
+
+  .eyebrow::after {
+    width: 90px;
+    background: linear-gradient(90deg, var(--color-accent), transparent);
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.4 LOGIN CARD
+     On the canvas the card shape is an SVG frame (arched top) with a gradient
+     fill; its colours follow the theme.
+     --------------------------------------------------------------------------- */
+  .card-gradient-top {
+    stop-color: #fff0da;
+  }
+
+  .card-gradient-mid {
+    stop-color: #fff9ef;
+  }
+
+  .card-gradient-bottom {
+    stop-color: #fff5e6;
+  }
+
+  .card-outline {
+    stroke: #e6a05c;
+  }
+
+  .card-inner-outline {
+    stroke: #f1c394;
+  }
+
+  [data-theme="dark"] .card-gradient-top {
+    stop-color: #ffffff;
+  }
+
+  [data-theme="dark"] .card-gradient-mid {
+    stop-color: #fbf7ef;
+  }
+
+  [data-theme="dark"] .card-gradient-bottom {
+    stop-color: #f6efe2;
+  }
+
+  [data-theme="dark"] .card-outline {
+    stroke: #c9a25e;
+  }
+
+  [data-theme="dark"] .card-inner-outline {
+    stroke: #e3d3b4;
+  }
+
+  /* "—— Login to your account ——" and "—— OR ——": rules on both sides */
+  .rule-both-sides::before,
+  .rule-both-sides::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule-colour, var(--color-line));
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.5 FORM INPUTS
+     A rounded box holding an icon, the input and (optionally) a button.
+     --------------------------------------------------------------------------- */
+  .input-box:focus-within {
+    outline: 3px solid #a05c2826;
+    border-color: var(--color-accent);
+  }
+
+  /* Status message under the form: hidden while empty */
+  .form-status:empty {
+    display: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.6 PRIMARY BUTTON (register page; same look as the Login button)
+     --------------------------------------------------------------------------- */
+  .primary-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 17px;
+    width: 100%;
+    height: 48px;
+    border: 1px solid var(--color-primary-dark);
+    border-radius: 13px;
+    background: linear-gradient(110deg, var(--color-primary), var(--color-primary-dark));
+    color: #fff9f0;
+    font-size: 19px;
+    font-weight: 700;
+    box-shadow: inset 0 1px 1px #ffffff24;
+  }
+
+  .primary-button:hover {
+    background: var(--color-primary-dark);
+  }
+
+  [data-theme="dark"] .primary-button {
+    border-color: #000;
+    background: #000;
+    color: #e9cc8e;
+  }
+
+  [data-theme="dark"] .primary-button:hover {
+    background: #1e1416;
+  }
+
+  @variant canvas {
+    .primary-button {
+      height: 64px;
+      border-radius: 19px;
+      font-size: 26px;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.7 REGISTRATION STEPPER (Mobile → OTP → Password → Complete)
+     Each <li class="step"> has data-state="done" | "current" | "todo".
+     A line joins each step to the one before it; it turns solid once that
+     earlier step is passed.
+     --------------------------------------------------------------------------- */
+  .step {
+    --dot: 40px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  @variant canvas {
+    .step {
+      --dot: 54px;
+      gap: 10px;
+    }
+  }
+
+  /* Connector line from the previous step's dot to this one */
+  .step + .step::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--dot) / 2 - 1px);
+    right: calc(50% + var(--dot) / 2 + 4px);
+    left: calc(-50% + var(--dot) / 2 + 4px);
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-line);
+  }
+
+  .step:is([data-state="done"], [data-state="current"]) + .step:is([data-state="done"], [data-state="current"])::before {
+    background: var(--color-primary);
+  }
+
+  .step-dot {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: var(--dot);
+    height: var(--dot);
+    border: 2px solid var(--color-line);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    transition:
+      background 0.3s,
+      color 0.3s,
+      border-color 0.3s,
+      box-shadow 0.3s;
+  }
+
+  .step-dot .icon {
+    width: 45%;
+    height: 45%;
+  }
+
+  .step-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  @variant canvas {
+    .step-label {
+      font-size: 15px;
+    }
+  }
+
+  /* Current step: filled maroon with a soft ring */
+  .step[data-state="current"] .step-dot {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: #fff9f0;
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-primary) 15%, transparent);
+  }
+
+  /* Finished step: solid fill */
+  .step[data-state="done"] .step-dot {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff9f0;
+  }
+
+  .step:is([data-state="done"], [data-state="current"]) .step-label {
+    color: var(--color-primary);
+  }
+
+  [data-theme="dark"] .step:is([data-state="done"], [data-state="current"]) .step-dot {
+    color: #e9cc8e;
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.8 OTP – one real input drawn as six boxes
+     The <input class="otp-input"> lies invisibly over the boxes and takes all
+     typing; scripts/register.js shows each digit in its box and marks the box
+     the next digit goes into (data-active) while the input has focus.
+     --------------------------------------------------------------------------- */
+  .otp-box {
+    display: grid;
+    place-items: center;
+    height: 48px;
+    border: 1.5px solid var(--color-line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+    color: var(--color-ink);
+    font-size: 22px;
+    font-weight: 700;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .otp-box[data-active] {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px #a05c2826;
+  }
+
+  .otp-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    font-size: 16px; /* 16px+ stops phones zooming in on focus */
+    letter-spacing: 2em;
+    outline: none;
+    cursor: text;
+  }
+
+  .otp-input::selection {
+    background: transparent;
+  }
+
+  @variant canvas {
+    .otp-box {
+      height: 64px;
+      border-radius: 16px;
+      font-size: 30px;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     3.9 PASSWORD STRENGTH BARS
+     scripts/register.js sets data-level 0–4 on #strength-bars.
+     --------------------------------------------------------------------------- */
+  .strength-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--color-line);
+    transition: background 0.3s;
+  }
+
+  [data-level="1"] .strength-bar:nth-child(-n + 1) {
+    background: #d93025;
+  }
+
+  [data-level="2"] .strength-bar:nth-child(-n + 2) {
+    background: #e88900;
+  }
+
+  [data-level="3"] .strength-bar:nth-child(-n + 3) {
+    background: #9bbb3c;
+  }
+
+  [data-level="4"] .strength-bar {
+    background: #2e8b3a;
+  }
+}

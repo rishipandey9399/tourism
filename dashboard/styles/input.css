@@ -1,0 +1,313 @@
+/* =============================================================================
+   INVESTOR DASHBOARD – TAILWIND SOURCE STYLESHEET
+   -----------------------------------------------------------------------------
+   Compiled by Tailwind into styles/dashboard.css (never edit that file):
+
+       npm run build:dashboard        (one-off build)
+       npm run watch:dashboard        (rebuild on every save)
+
+   Same two themes as the login page:
+   • light (default) – peach / saffron / maroon
+   • dark            – ivory page, black sidebar, gold accents. Use `dark:`.
+
+   Layout and colours are Tailwind classes in index.html; this file holds the
+   design tokens and the few things utility classes can't express cleanly.
+   ============================================================================= */
+
+@import "tailwindcss" source(none);
+
+@source "../index.html";
+@source "../profile.html";
+@source "../profile-form.html";
+@source "../scripts";
+
+/* dark: – applies when <html data-theme="dark"> */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+
+/* =============================================================================
+   1. DESIGN TOKENS (light theme values; dark theme overrides below)
+   ============================================================================= */
+@theme {
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+
+  --color-primary: #a93612;        /* active items, numbers, page buttons */
+  --color-primary-dark: #713018;   /* sidebar gradient end */
+  --color-accent: #e88900;         /* icons, highlights */
+  --color-page: #fff4e5;           /* page background */
+  --color-surface: #fffaf3;        /* cards */
+  --color-soft: #fce5cc;           /* icon tiles, table header */
+  --color-line: #f1dcc4;           /* card borders, dividers */
+  --color-ink: #2f1a10;            /* main text */
+  --color-muted: #80543b;          /* secondary text */
+
+  /* Sidebar */
+  --color-side-from: #a93612;
+  --color-side-to: #6b2a12;
+  --color-side-ink: #fff4e5;
+  --color-side-active: #fff4e5;
+  --color-side-active-ink: #a93612;
+}
+
+@layer base {
+  [data-theme="dark"] {
+    --color-primary: #1e1416;
+    --color-primary-dark: #000000;
+    --color-accent: #a9813f;
+    --color-page: #f4ecdd;
+    --color-surface: #fbf7ef;
+    --color-soft: #efe5d2;
+    --color-line: #e3d3b4;
+    --color-ink: #1e1416;
+    --color-muted: #6b5a48;
+
+    --color-side-from: #000000;
+    --color-side-to: #1e1416;
+    --color-side-ink: #f4ecdd;
+    --color-side-active: #e9cc8e;
+    --color-side-active-ink: #0e0a0b;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-page);
+  }
+
+  :is(button, a, input):focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Line icons drawn with <svg class="icon"> */
+  .icon {
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+
+/* =============================================================================
+   2. COMPONENTS
+   ============================================================================= */
+@layer components {
+
+  /* ---------------------------------------------------------------------------
+     2.1 PAGE BACKGROUND
+     A soft peach glow behind the content.
+     --------------------------------------------------------------------------- */
+  .page-glow {
+    background:
+      radial-gradient(ellipse at 70% 0%, var(--color-soft), transparent 45%),
+      radial-gradient(ellipse at 20% 100%, var(--color-soft), transparent 40%),
+      var(--color-page);
+  }
+
+  /* ---------------------------------------------------------------------------
+     2.2 SIDEBAR
+     Slides in from the left on phones / tablets (data-open on <body>).
+     --------------------------------------------------------------------------- */
+  .sidebar {
+    background: linear-gradient(170deg, var(--color-side-from), var(--color-side-to));
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (max-width: 1023px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    body[data-sidebar-open] .sidebar {
+      transform: none;
+    }
+  }
+
+  /* Sub-menu under "ITT for Identified Land" opens and closes smoothly */
+  .submenu {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s ease;
+  }
+
+  .submenu > div {
+    overflow: hidden;
+  }
+
+  [aria-expanded="true"] + .submenu {
+    grid-template-rows: 1fr;
+  }
+
+  [aria-expanded="true"] .submenu-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* ---------------------------------------------------------------------------
+     2.3 STAT CARDS
+     Each card has its own colour (--tint) used by the icon tile and the
+     soft wave drawn in the bottom-right corner.
+     --------------------------------------------------------------------------- */
+  .stat-card {
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgb(169 54 18 / 0.1);
+  }
+
+  .stat-icon {
+    background: color-mix(in srgb, var(--tint) 16%, transparent);
+    color: var(--tint);
+  }
+
+  .stat-wave {
+    color: color-mix(in srgb, var(--tint) 22%, transparent);
+  }
+
+  /* ---------------------------------------------------------------------------
+     2.4 ROW ACTION MENU (the ⋮ button in the applications table)
+     --------------------------------------------------------------------------- */
+  .row-menu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition:
+      opacity 0.2s,
+      transform 0.2s,
+      visibility 0.2s;
+  }
+
+  .row-menu[data-open] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     2.5 FORM FIELDS (investor profile form)
+     Kept compact on purpose: 13px labels, 14px inputs, 40px tall.
+     --------------------------------------------------------------------------- */
+  .field-label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  /* Red asterisk after required labels: <label class="field-label is-required"> */
+  .field-label.is-required::after {
+    content: " *";
+    color: #d93025;
+  }
+
+  .field-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: color-mix(in srgb, #ffffff 65%, var(--color-surface));
+    color: var(--color-ink);
+    font-size: 14px;
+    outline: none;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+
+  textarea.field-input {
+    height: 64px;
+    padding: 9px 12px;
+    resize: vertical;
+  }
+
+  /* Drop-downs get our own arrow */
+  select.field-input {
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2380543b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 14px center;
+    background-repeat: no-repeat;
+    background-size: 18px;
+  }
+
+  .field-input::placeholder {
+    color: color-mix(in srgb, var(--color-muted) 70%, transparent);
+  }
+
+  .field-input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  .field-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* Error state, set by scripts/profile-form.js */
+  .field-input[aria-invalid="true"] {
+    border-color: #d93025;
+    box-shadow: 0 0 0 3px rgb(217 48 37 / 0.12);
+  }
+
+  .field-error {
+    margin-top: 5px;
+    font-size: 13px;
+    color: #c5221f;
+  }
+
+  .field-error:empty {
+    display: none;
+  }
+
+  /* Section heading inside the form card */
+  .form-section-title {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-line);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  [data-theme="dark"] .form-section-title {
+    color: #9a6f2c;
+  }
+
+  /* ---------------------------------------------------------------------------
+     2.6 DECORATIVE SVG
+     Temple silhouette in the sidebar and hills along the bottom of the page.
+     --------------------------------------------------------------------------- */
+  .temple-art {
+    color: #f5b25c;
+  }
+
+  [data-theme="dark"] .temple-art {
+    color: #c9a25e;
+  }
+
+  .hills-art {
+    color: var(--color-soft);
+  }
+}
+
+
+/* =============================================================================
+   3. REDUCED MOTION
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
